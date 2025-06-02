@@ -1,0 +1,61 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "ingestwatch"
+dynamic = ["version"]
+requires-python = ">=3.13"
+dependencies = [
+    "openai>=1.82.1",
+    "openpyxl>=3.1.5",
+    "pillow>=11.2.1",
+    "pymupdf>=1.26.0",
+    "pytesseract>=0.3.13",
+    "python-docx>=1.1.2",
+    "qdrant-client>=1.14.2",
+    "watchdog>=6.0.0",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/ydethe/ingestwatch/-/issues"
+Homepage = "https://github.com/ydethe/ingestwatch"
+Source = "https://github.com/ydethe/ingestwatch"
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.black]
+line-length = 100
+target-version = ['py313']
+
+[tool.uv]
+resolution = "highest"
+
+[project.scripts]
+ingestwatch = "ingestwatch.ingest_watch:main"
+
+[tool.pdm.version]
+source = "scm"
+
+[dependency-groups]
+dev = [
+    "black==22.3.0",
+    "ipython>=8.30.0",
+    "pre-commit>=4.0.1",
+]
+doc = [
+    "pdoc3>=0.11.3",
+    "pylint>=3.3.2",
+]
+test = [
+    "pytest-asyncio>=0.25.0",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "pytest-html>=4.1.1",
+    "pytest-instafail>=0.5.0",
+    "pytest-mock>=3.14.0",
+    "pytest-picked>=0.5.1",
+    "pytest-sugar>=1.0.0",
+    "pytest-xdist>=3.6.1",
+]
