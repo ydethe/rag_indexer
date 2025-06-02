@@ -1,8 +1,8 @@
-import os
 import time
 import hashlib
 import mimetypes
 from pathlib import Path
+import uuid
 
 import fitz  # PyMuPDF for PDFs
 import docx
@@ -23,22 +23,17 @@ from qdrant_client.http.models import (
     MatchValue,
 )
 
+from .config import config
 
-# === CONFIG ===
-DOCS_PATH = Path("/docs")
-COLLECTION_NAME = "documents"
-EMBEDDING_MODEL = "text-embedding-ada-002"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 200
 
-qdrant = QdrantClient(host=os.environ["QDRANT_HOST"], port=int(os.environ["QDRANT_PORT"]))
-openai = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+qdrant = QdrantClient(host=config.QDRANT_HOST, port=config.QDRANT_PORT)
+openai = OpenAI(api_key=config.OPENAI_API_KEY)
 
 # === INIT VECTOR COLLECTION ===
 def init_collection():
-    if not qdrant.collection_exists(COLLECTION_NAME):
+    if not qdrant.collection_exists(config.COLLECTION_NAME):
         qdrant.recreate_collection(
-            collection_name=COLLECTION_NAME,
+            collection_name=config.COLLECTION_NAME,
             vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
         )
 
@@ -87,9 +82,9 @@ def chunk_text(text: str):
     chunks = []
     start = 0
     while start < len(text):
-        end = min(start + CHUNK_SIZE, len(text))
+        end = min(start + config.CHUNK_SIZE, len(text))
         chunks.append(text[start:end])
-        start += CHUNK_SIZE - CHUNK_OVERLAP
+        start += config.CHUNK_SIZE - config.CHUNK_OVERLAP
     return chunks
 
 
@@ -101,16 +96,18 @@ def file_hash(path: Path) -> str:
 # === INDEX FILE ===
 def index_file(path: Path):
     print(f"[INDEX] {path}")
-    doc_id = file_hash(path)
+    # doc_id = file_hash(path)
     text = extract_text(path)
     chunks = chunk_text(text)
 
     points = []
     for i, chunk in enumerate(chunks):
-        embedding = openai.embeddings.create(input=chunk, model=EMBEDDING_MODEL).data[0].embedding
+        embedding = (
+            openai.embeddings.create(input=chunk, model=config.EMBEDDING_MODEL).data[0].embedding
+        )
         points.append(
             PointStruct(
-                id=f"{doc_id}_{i}",
+                id=str(uuid.uuid4()),
                 payload={"doc_path": str(path), "chunk_index": i, "text": chunk},
                 vector=embedding,
             )
@@ -118,19 +115,19 @@ def index_file(path: Path):
 
     # Remove previous vectors
     qdrant.delete(
-        collection_name=COLLECTION_NAME,
+        collection_name=config.COLLECTION_NAME,
         points_selector=Filter(
             must=[FieldCondition(key="doc_path", match=MatchValue(value=str(path)))]
         ),
     )
-    qdrant.upsert(collection_name=COLLECTION_NAME, points=points)
+    qdrant.upsert(collection_name=config.COLLECTION_NAME, points=points)
 
 
 # === REMOVE FILE ===
 def remove_file(path: Path):
     print(f"[REMOVE] {path}")
     qdrant.delete(
-        collection_name=COLLECTION_NAME,
+        collection_name=config.COLLECTION_NAME,
         points_selector=Filter(
             must=[FieldCondition(key="doc_path", match=MatchValue(value=str(path)))]
         ),
@@ -157,7 +154,7 @@ class DocsHandler(FileSystemEventHandler):
 
 # === MAIN ===
 def initial_index():
-    for path in DOCS_PATH.glob("**/*"):
+    for path in config.DOCS_PATH.glob("**/*"):
         if path.is_file():
             index_file(path)
 
@@ -170,7 +167,7 @@ def main():
 
     event_handler = DocsHandler()
     observer = Observer()
-    observer.schedule(event_handler, path=str(DOCS_PATH), recursive=True)
+    observer.schedule(event_handler, path=config.DOCS_PATH, recursive=True)
     observer.start()
     try:
         while True:

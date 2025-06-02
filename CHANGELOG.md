@@ -8,6 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- insertion marker -->
 ## Unreleased
 
-<small>[Compare with latest]()</small>
+<small>[Compare with latest](https://github.com/ydethe/rag_indexer/compare/94eb7c1b309263c638f3e92cea40ebdc13d83ac1...HEAD)</small>
 
 <!-- insertion marker -->
