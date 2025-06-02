@@ -24,6 +24,7 @@ from qdrant_client.http.models import (
 )
 
 from .config import config
+from . import logger
 
 
 qdrant = QdrantClient(host=config.QDRANT_HOST, port=config.QDRANT_PORT)
@@ -36,6 +37,8 @@ def init_collection():
             collection_name=config.COLLECTION_NAME,
             vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
         )
+    else:
+        logger.info(f"Collection '{config.COLLECTION_NAME}' already created. Skipping")
 
 
 # === TEXT EXTRACTION ===
@@ -73,7 +76,7 @@ def extract_text(file_path: Path) -> str:
             return file_path.read_text()
 
     except Exception as e:
-        print(f"[ERROR] Failed to parse {file_path}: {e}")
+        logger.error(f"Failed to parse {file_path}: {e}")
     return ""
 
 
@@ -95,7 +98,7 @@ def file_hash(path: Path) -> str:
 
 # === INDEX FILE ===
 def index_file(path: Path):
-    print(f"[INDEX] {path}")
+    logger.info(f"[INDEX] {path}")
     # doc_id = file_hash(path)
     text = extract_text(path)
     chunks = chunk_text(text)
@@ -125,7 +128,7 @@ def index_file(path: Path):
 
 # === REMOVE FILE ===
 def remove_file(path: Path):
-    print(f"[REMOVE] {path}")
+    logger.info(f"[REMOVE] {path}")
     qdrant.delete(
         collection_name=config.COLLECTION_NAME,
         points_selector=Filter(
@@ -160,10 +163,10 @@ def initial_index():
 
 
 def main():
-    print("[START] Initial indexing...")
+    logger.info("[START] Initial indexing...")
     init_collection()
     initial_index()
-    print("[WATCHING] Waiting for changes...")
+    logger.info("[WATCHING] Waiting for changes...")
 
     event_handler = DocsHandler()
     observer = Observer()
