@@ -41,7 +41,7 @@ repos:
     - --fix
     - --exit-non-zero-on-fix
     - --config
-    - chat/ingestion/pyproject.toml
+    - pyproject.toml
     id: ruff
   repo: https://github.com/charliermarsh/ruff-pre-commit
   rev: v0.3.3

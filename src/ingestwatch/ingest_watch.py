@@ -3,7 +3,6 @@ import time
 import hashlib
 import mimetypes
 from pathlib import Path
-from threading import Thread
 
 import fitz  # PyMuPDF for PDFs
 import docx
@@ -15,7 +14,15 @@ from watchdog.events import FileSystemEventHandler
 
 from openai import OpenAI
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import PointStruct, Distance, VectorParams, Filter, FieldCondition, MatchValue
+from qdrant_client.http.models import (
+    PointStruct,
+    Distance,
+    VectorParams,
+    Filter,
+    FieldCondition,
+    MatchValue,
+)
+
 
 # === CONFIG ===
 DOCS_PATH = Path("/docs")
@@ -34,6 +41,7 @@ def init_collection():
             collection_name=COLLECTION_NAME,
             vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
         )
+
 
 # === TEXT EXTRACTION ===
 def extract_text(file_path: Path) -> str:
@@ -73,6 +81,7 @@ def extract_text(file_path: Path) -> str:
         print(f"[ERROR] Failed to parse {file_path}: {e}")
     return ""
 
+
 # === TEXT CHUNKING ===
 def chunk_text(text: str):
     chunks = []
@@ -83,9 +92,11 @@ def chunk_text(text: str):
         start += CHUNK_SIZE - CHUNK_OVERLAP
     return chunks
 
+
 # === HASH FOR DOC TRACKING ===
 def file_hash(path: Path) -> str:
     return hashlib.md5(path.read_bytes()).hexdigest()
+
 
 # === INDEX FILE ===
 def index_file(path: Path):
@@ -97,26 +108,34 @@ def index_file(path: Path):
     points = []
     for i, chunk in enumerate(chunks):
         embedding = openai.embeddings.create(input=chunk, model=EMBEDDING_MODEL).data[0].embedding
-        points.append(PointStruct(
-            id=f"{doc_id}_{i}",
-            payload={"doc_path": str(path), "chunk_index": i, "text": chunk},
-            vector=embedding,
-        ))
+        points.append(
+            PointStruct(
+                id=f"{doc_id}_{i}",
+                payload={"doc_path": str(path), "chunk_index": i, "text": chunk},
+                vector=embedding,
+            )
+        )
 
     # Remove previous vectors
     qdrant.delete(
         collection_name=COLLECTION_NAME,
-        points_selector=Filter(must=[FieldCondition(key="doc_path", match=MatchValue(value=str(path)))]),
+        points_selector=Filter(
+            must=[FieldCondition(key="doc_path", match=MatchValue(value=str(path)))]
+        ),
     )
     qdrant.upsert(collection_name=COLLECTION_NAME, points=points)
+
 
 # === REMOVE FILE ===
 def remove_file(path: Path):
     print(f"[REMOVE] {path}")
     qdrant.delete(
         collection_name=COLLECTION_NAME,
-        points_selector=Filter(must=[FieldCondition(key="doc_path", match=MatchValue(value=str(path)))]),
+        points_selector=Filter(
+            must=[FieldCondition(key="doc_path", match=MatchValue(value=str(path)))]
+        ),
     )
+
 
 # === FILE WATCHER ===
 class DocsHandler(FileSystemEventHandler):
@@ -135,11 +154,13 @@ class DocsHandler(FileSystemEventHandler):
             path = Path(event.src_path)
             index_file(path)
 
+
 # === MAIN ===
 def initial_index():
     for path in DOCS_PATH.glob("**/*"):
         if path.is_file():
             index_file(path)
+
 
 def main():
     print("[START] Initial indexing...")
@@ -157,6 +178,7 @@ def main():
     except KeyboardInterrupt:
         observer.stop()
     observer.join()
+
 
 # if __name__ == "__main__":
 #     main()
