@@ -52,35 +52,43 @@ def initialize_state_db():
     conn.close()
 
 
-def get_stored_timestamp(path: str) -> Optional[float]:
+def get_stored_timestamp(path: Path) -> Optional[float]:
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT last_modified FROM files WHERE path = ?", (path,))
+    c.execute("SELECT last_modified FROM files WHERE path = ?", (str(path),))
     row = c.fetchone()
     conn.close()
     return row[0] if row else None
 
 
-def set_stored_timestamp(path: str, ts: float):
+def set_stored_timestamp(path: Path, ts: float):
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
-    c.execute("REPLACE INTO files (path, last_modified) VALUES (?, ?)", (path, ts))
+    c.execute("REPLACE INTO files (path, last_modified) VALUES (?, ?)", (str(path), ts))
     conn.commit()
     conn.close()
 
 
-def delete_stored_file(path: str):
+def delete_stored_file(path: Path):
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
-    c.execute("DELETE FROM files WHERE path = ?", (path,))
+    c.execute("DELETE FROM files WHERE path = ?", (str(path),))
     conn.commit()
     conn.close()
 
 
-def rename_stored_file(path: str):
+def rename_folder(srcpath: Path, destpath: Path):
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
-    c.execute("REPLACE INTO files (path) VALUES (?)", (path,))
+    c.execute("UPDATE files SET path=? WHERE path LIKE ?", (str(destpath), f"%{srcpath}"))
+    conn.commit()
+    conn.close()
+
+
+def rename_stored_file(srcpath: Path, destpath: Path):
+    conn = sqlite3.connect(config.STATE_DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE files SET path=? WHERE path=?", (str(destpath), str(srcpath)))
     conn.commit()
     conn.close()
 
@@ -242,23 +250,22 @@ class DocumentIndexer:
         # Lock around state & indexing operations
         self.lock = threading.Lock()
 
-    def process_file(self, filepath: str):
+    def process_file(self, filepath: Path):
         """
         Extract text, chunk, embed, and upsert into Qdrant.
         The file ID in Qdrant will be a SHA1 of its absolute path.
         """
-        basename = os.path.basename(filepath)
+        basename = filepath.parts[0]
 
         try:
-            abspath = str(Path(filepath).resolve())
             stat = os.path.getmtime(filepath)
-            stored = get_stored_timestamp(abspath)
+            stored = get_stored_timestamp(filepath)
             if stored is not None and stored == stat:
                 # No change
                 return
 
             logger.info(f"[INDEX] Processing changed file: {filepath}")
-            text = extract_text(filepath)
+            text = extract_text(str(filepath))
             if not text:
                 logger.warning(f"No text extracted; skipping: {filepath}")
                 return
@@ -275,7 +282,7 @@ class DocumentIndexer:
                     )
                 )
                 payload = {
-                    "source": abspath,
+                    "source": str(filepath),
                     "chunk_index": idx,
                     "text": chunk,
                 }
@@ -285,26 +292,27 @@ class DocumentIndexer:
             self.qdrant.upsert(points)
 
             # Update state DB
-            set_stored_timestamp(abspath, stat)
+            set_stored_timestamp(filepath, stat)
             logger.info(f"[INDEX] Upserted {len(points)} vectors from {filepath}")
 
         except Exception as e:
             logger.error(f"Error processing {filepath}: {e}")
 
-    def remove_file(self, filepath: str):
+    def rename(self, src_abs_path, dest_abs_path):
+        rename_stored_file(src_abs_path, dest_abs_path)
+
+    def remove_file(self, abspath: str):
         """
         Delete all vectors whose payload.source == this file's absolute path.
         We identify by regenerating all chunk IDs for old state—but since we store
         last‐modified in SQLite, we know it existed before; we'll iterate over state DB
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
         """
-        abspath = str(Path(filepath).resolve())
-
-        logger.info(f"[DELETE] Removing file from index: {filepath}")
+        logger.info(f"[DELETE] Removing file from index: {abspath}")
 
         # Query Qdrant for all points with payload.source == abspath
         # filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
-        filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=abspath))])
+        filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=str(abspath)))])
 
         # Retrieve IDs matching that filter
         hits = self.qdrant.client.search(
@@ -317,7 +325,7 @@ class DocumentIndexer:
         ids_to_delete = [hit.id for hit in hits]
         if ids_to_delete:
             self.qdrant.delete(ids_to_delete)
-            logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {filepath}")
+            logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {abspath}")
 
         # Remove from state DB
         delete_stored_file(abspath)
@@ -330,15 +338,15 @@ class DocumentIndexer:
         logger.info("Performing initial scan of documents folder...")
 
         # 1. Build a set of all file paths on disk
-        disk_files = []
+        disk_files: list[Path] = []
         for ext in ("*.pdf", "*.docx", "*.xlsx", "*.xlsm", "*.md", "*.txt"):
             disk_files.extend(self.root.rglob(ext))
-        disk_files = [str(p.resolve()) for p in disk_files]
+        disk_files = [p.resolve() for p in disk_files]
 
         # 2. For each file on disk, check timestamp vs. state DB
         for file_path in disk_files:
             stored = get_stored_timestamp(file_path)
-            modified = os.path.getmtime(file_path)
+            modified = os.path.getmtime(str(file_path))
             if stored is None or stored != modified:
                 # New or changed
                 self.process_file(file_path)
@@ -359,33 +367,33 @@ class DocumentIndexer:
         if event.is_directory:
             return
 
-        _, ext = os.path.splitext(event.src_path.lower())
-        if ext in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
+        filepath = Path(event.src_path)
+        if filepath.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
             with self.lock:
                 # Small delay to allow file write to finish
                 time.sleep(0.5)
-                self.process_file(event.src_path)
+                self.process_file(filepath)
 
     def on_deleted(self, event: FileSystemEvent):
         if event.is_directory:
             return
 
-        _, ext = os.path.splitext(event.src_path.lower())
-        if ext in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
+        filepath = Path(event.src_path)
+        if filepath.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
             with self.lock:
-                self.remove_file(event.src_path)
+                self.remove_file(filepath)
 
     def on_moved(self, event: FileSystemEvent):
         # TODO Implement folder and file renaming
-
-        abspath = str(Path(event.src_path).resolve())
+        src_abs_path = Path(event.src_path).resolve()
+        dest_abs_path = Path(event.dest_path).resolve()
 
         if event.is_directory:
-            pass
+            rename_folder(src_abs_path, dest_abs_path)
         else:
-            _, ext = os.path.splitext(event.src_path.lower())
-            if ext in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
-                rename_stored_file(abspath)
+            if src_abs_path.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
+                with self.lock:
+                    self.rename(src_abs_path, dest_abs_path)
 
     def start_watcher(self):
         event_handler = FileSystemEventHandler()
