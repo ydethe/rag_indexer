@@ -77,6 +77,14 @@ def delete_stored_file(path: str):
     conn.close()
 
 
+def rename_stored_file(path: str):
+    conn = sqlite3.connect(config.STATE_DB_PATH)
+    c = conn.cursor()
+    c.execute("REPLACE INTO files (path) VALUES (?)", (path,))
+    conn.commit()
+    conn.close()
+
+
 # === Qdrant helper ===
 class QdrantIndexer:
     def __init__(self):
@@ -239,6 +247,8 @@ class DocumentIndexer:
         Extract text, chunk, embed, and upsert into Qdrant.
         The file ID in Qdrant will be a SHA1 of its absolute path.
         """
+        basename = os.path.basename(filepath)
+
         try:
             abspath = str(Path(filepath).resolve())
             stat = os.path.getmtime(filepath)
@@ -259,12 +269,9 @@ class DocumentIndexer:
             points = []
             # Use SHA1 of path + chunk index as unique point ID
             for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
-                # point_id: sha1(path + '::' + str(idx))
-                # pid = hashlib.sha1(f"{abspath}::{idx}".encode("utf-8")).hexdigest()
-                # pid = str(uuid.uuid4())
                 pid = str(
                     uuid.UUID(
-                        int=int(hashlib.md5(f"{abspath}::{idx}".encode("utf-8")).hexdigest(), 16)
+                        int=int(hashlib.md5(f"{basename}::{idx}".encode("utf-8")).hexdigest(), 16)
                     )
                 )
                 payload = {
@@ -362,16 +369,29 @@ class DocumentIndexer:
     def on_deleted(self, event: FileSystemEvent):
         if event.is_directory:
             return
+
         _, ext = os.path.splitext(event.src_path.lower())
         if ext in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
             with self.lock:
                 self.remove_file(event.src_path)
 
+    def on_moved(self, event: FileSystemEvent):
+        # TODO Implement folder and file renaming
+
+        abspath = str(Path(event.src_path).resolve())
+
+        if event.is_directory:
+            pass
+        else:
+            _, ext = os.path.splitext(event.src_path.lower())
+            if ext in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
+                rename_stored_file(abspath)
+
     def start_watcher(self):
         event_handler = FileSystemEventHandler()
         event_handler.on_created = self.on_created_or_modified
         event_handler.on_modified = self.on_created_or_modified
-        event_handler.on_moved = lambda e: self.on_deleted(e)  # treat move as delete+create
+        event_handler.on_moved = self.on_moved  # treat move as delete+create
         event_handler.on_deleted = self.on_deleted
 
         observer = Observer()
