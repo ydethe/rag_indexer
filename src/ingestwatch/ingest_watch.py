@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional, List
 import uuid
 
+import rich.progress as rp
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 import nltk
@@ -130,7 +131,9 @@ def extract_text_from_pdf(path: str) -> str:
     text_chunks = []
     try:
         reader = PdfReader(path)
-        for page in reader.pages:
+        for page in rp.track(
+            reader.pages, description=f"Reading {len(reader.pages)} pages pdf file"
+        ):
             txt = page.extract_text() or ""
             text_chunks.append(txt)
         full_text = "\n".join(text_chunks).strip()
@@ -149,7 +152,7 @@ def ocr_pdf(path: str) -> str:
     try:
         # Convert each page to an image
         images = convert_from_path(path)
-        for img in images:
+        for img in rp.track(images, description="Running OCR on pdf pages"):
             txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
             text.append(txt)
     except Exception as e:
@@ -160,7 +163,11 @@ def ocr_pdf(path: str) -> str:
 def extract_text_from_docx(path: str) -> str:
     try:
         doc = docx.Document(path)
-        paragraphs = [p.text for p in doc.paragraphs]
+        page_count = sum(p.contains_page_break for p in doc.paragraphs) + 1
+        paragraphs = [
+            p.text
+            for p in rp.track(doc.paragraphs, description=f"Reading {page_count} pages doc file")
+        ]
         return "\n".join(paragraphs).strip()
     except Exception as e:
         logger.error(f"Error reading DOCX ({path}): {e}")
@@ -171,7 +178,9 @@ def extract_text_from_xlsx(path: str) -> str:
     try:
         wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
         all_text = []
-        for sheet in wb.worksheets:
+        for sheet in rp.track(
+            wb.worksheets, description=f"Reading {len(wb.worksheets)} pages excel file"
+        ):
             for row in sheet.iter_rows(values_only=True):
                 row_text = [str(cell) for cell in row if cell is not None]
                 if row_text:
@@ -213,7 +222,7 @@ def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
     sentences = sent_tokenize(text)
     chunks = []
     current_chunk = ""
-    for sent in sentences:
+    for sent in rp.track(sentences, description="Building chunks"):
         if len(current_chunk) + len(sent) + 1 <= chunk_size:
             current_chunk += " " + sent if current_chunk else sent
         else:
@@ -269,11 +278,15 @@ class DocumentIndexer:
                 return
 
             chunks = chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
-            embeddings = self.model.encode(chunks, show_progress_bar=False)
+            logger.info(f"Embedding {len(chunks)} chunks")
+            embeddings = self.model.encode(chunks, show_progress_bar=True)
 
             points: list[PointStruct] = []
             # Use MD5 of path + chunk index as unique point ID
-            for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
+            for idx, (chunk, emb) in rp.track(
+                enumerate(zip(chunks, embeddings)),
+                description=f"Building {len(chunks)} embeddings for qdrant",
+            ):
                 pid = str(
                     uuid.UUID(
                         int=int(hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest(), 16)
@@ -303,7 +316,7 @@ class DocumentIndexer:
         """
         Delete all vectors whose payload.source == this file's absolute path.
         We identify by regenerating all chunk IDs for old state—but since we store
-        last‐modified in SQLite, we know it existed before; we'll iterate over state DB
+        last-modified in SQLite, we know it existed before; we'll iterate over state DB
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
         """
         logger.info(f"[DELETE] Removing file from index: {abspath}")
@@ -398,7 +411,7 @@ class DocumentIndexer:
         event_handler = FileSystemEventHandler()
         event_handler.on_created = self.on_created_or_modified
         event_handler.on_modified = self.on_created_or_modified
-        event_handler.on_moved = self.on_moved  # treat move as delete+create
+        event_handler.on_moved = self.on_moved
         event_handler.on_deleted = self.on_deleted
 
         observer = Observer()
