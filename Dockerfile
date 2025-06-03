@@ -1,6 +1,6 @@
-FROM python:3.13-alpine
+FROM python:3.13
 
-RUN apt update && apt install -y \
+RUN apt update && python3 -m pip install --upgrade pip && apt install -y \
     tesseract-ocr \
     poppler-utils \
     libgl1

@@ -12,7 +12,6 @@ services:
 
   # ingestion:
   #   build: .
-  #   # (Dockerfile uses python:3.10-slim + PyMuPDF, docx, openpyxl, pytesseract, openai, qdrant-client, watchdog, etc.)
   #   restart: unless-stopped
   #   depends_on:
   #     - qdrant
@@ -29,24 +28,24 @@ services:
   #     - CHUNK_SIZE=$CHUNK_SIZE
   #     - CHUNK_OVERLAP=$CHUNK_OVERLAP
 
-  # ui:
-  #   image: ghcr.io/cinnamon/kotaemon:main-ollama
-  #   restart: unless-stopped
-  #   # ports:
-  #   #   - "5000:5000"    # Web UI port
-  #   environment:
-  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
-  #     - KH_VECTORSTORE=Qdrant
-  #     - QDRANT_HOST=qdrant
-  #     - QDRANT_PORT=6333
-  #   labels:
-  #     - "traefik.enable=true"
+  ui:
+    image: ghcr.io/cinnamon/kotaemon:main-ollama
+    restart: unless-stopped
+    # ports:
+    #   - "5000:5000"    # Web UI port
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - KH_VECTORSTORE=Qdrant
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    labels:
+      - "traefik.enable=true"
 
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.service=$COMPOSE_PROJECT_NAME"
-  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=5000"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.service=$COMPOSE_PROJECT_NAME"
+      - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=5000"
 
   #     - "homepage.group=$HOME_GROUP"
   #     - "homepage.name=$HOME_NAME"

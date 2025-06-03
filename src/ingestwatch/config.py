@@ -13,10 +13,12 @@ class Config(BaseSettings):
     QDRANT_PORT: int
     OPENAI_API_KEY: str
     DOCS_PATH: Path
+    STATE_DB_PATH: Path
     COLLECTION_NAME: str
     EMBEDDING_MODEL: str
     CHUNK_SIZE: int
     CHUNK_OVERLAP: int
+    OCR_LANG: str
 
 
 config = Config()
