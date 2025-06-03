@@ -209,6 +209,7 @@ def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
                 else current_chunk
             )
             current_chunk = overlap_text + " " + sent
+
     if current_chunk:
         chunks.append(current_chunk)
     return chunks
@@ -222,11 +223,14 @@ class DocumentIndexer:
             config.EMBEDDING_MODEL, trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE
         )
         self.vector_size = self.model.get_sentence_embedding_dimension()
+
         # Initialize Qdrant
         self.qdrant = QdrantIndexer()
         self.qdrant.create_collection_if_missing(self.vector_size)
+
         # Root folder to watch
         self.root = config.DOCS_PATH
+
         # Lock around state & indexing operations
         self.lock = threading.Lock()
 
@@ -272,6 +276,7 @@ class DocumentIndexer:
 
             # Upsert into Qdrant
             self.qdrant.upsert(points)
+
             # Update state DB
             set_stored_timestamp(abspath, stat)
             logger.info(f"[INDEX] Upserted {len(points)} vectors from {filepath}")
@@ -286,28 +291,29 @@ class DocumentIndexer:
         last‐modified in SQLite, we know it existed before; we'll iterate over state DB
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
         """
-        # try:
-        if True:
-            abspath = str(Path(filepath).resolve())
-            logger.info(f"[DELETE] Removing file from index: {filepath}")
-            # Query Qdrant for all points with payload.source == abspath
-            # filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
-            filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=abspath))])
-            # Retrieve IDs matching that filter
-            hits = self.qdrant.client.search(
-                collection_name=config.COLLECTION_NAME,
-                query_vector=[0.0] * self.vector_size,  # dummy vector; we only want IDs
-                limit=1000,
-                query_filter=filter_,
-            )
-            ids_to_delete = [hit.id for hit in hits]
-            if ids_to_delete:
-                self.qdrant.delete(ids_to_delete)
-                logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {filepath}")
-            # Remove from state DB
-            delete_stored_file(abspath)
-        # except Exception as e:
-        #     logger.error(f"Error deleting {filepath} from index: {e}")
+        abspath = str(Path(filepath).resolve())
+
+        logger.info(f"[DELETE] Removing file from index: {filepath}")
+
+        # Query Qdrant for all points with payload.source == abspath
+        # filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
+        filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=abspath))])
+
+        # Retrieve IDs matching that filter
+        hits = self.qdrant.client.search(
+            collection_name=config.COLLECTION_NAME,
+            query_vector=[0.0] * self.vector_size,  # dummy vector; we only want IDs
+            limit=1000,
+            query_filter=filter_,
+        )
+
+        ids_to_delete = [hit.id for hit in hits]
+        if ids_to_delete:
+            self.qdrant.delete(ids_to_delete)
+            logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {filepath}")
+
+        # Remove from state DB
+        delete_stored_file(abspath)
 
     def initial_scan(self):
         """
@@ -315,6 +321,7 @@ class DocumentIndexer:
         Also, find any entries in state DB that no longer exist on disk, and remove them.
         """
         logger.info("Performing initial scan of documents folder...")
+
         # 1. Build a set of all file paths on disk
         disk_files = []
         for ext in ("*.pdf", "*.docx", "*.xlsx", "*.xlsm", "*.md", "*.txt"):
@@ -335,15 +342,16 @@ class DocumentIndexer:
         c.execute("SELECT path FROM files")
         rows = c.fetchall()
         conn.close()
+
         for (stored_path,) in rows:
             if not Path(stored_path).exists():
                 # Remove from Qdrant
                 self.remove_file(stored_path)
 
     def on_created_or_modified(self, event: FileSystemEvent):
-        # TODO If a file is modified, do not add a point in the qdrant database but upsert it
         if event.is_directory:
             return
+
         _, ext = os.path.splitext(event.src_path.lower())
         if ext in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
             with self.lock:
@@ -369,6 +377,7 @@ class DocumentIndexer:
         observer = Observer()
         observer.schedule(event_handler, str(self.root), recursive=True)
         observer.start()
+
         logger.info(f"Started file watcher on: {config.DOCS_PATH}")
         try:
             while True:
