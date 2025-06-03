@@ -255,8 +255,6 @@ class DocumentIndexer:
         Extract text, chunk, embed, and upsert into Qdrant.
         The file ID in Qdrant will be a SHA1 of its absolute path.
         """
-        basename = filepath.parts[0]
-
         try:
             stat = os.path.getmtime(filepath)
             stored = get_stored_timestamp(filepath)
@@ -273,15 +271,14 @@ class DocumentIndexer:
             chunks = chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
             embeddings = self.model.encode(chunks, show_progress_bar=False)
 
-            points = []
-            # Use SHA1 of path + chunk index as unique point ID
+            points: list[PointStruct] = []
+            # Use MD5 of path + chunk index as unique point ID
             for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
                 pid = str(
                     uuid.UUID(
-                        int=int(hashlib.md5(f"{basename}::{idx}".encode("utf-8")).hexdigest(), 16)
+                        int=int(hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest(), 16)
                     )
                 )
-                # TODO Do not store a path, but rather a file hash to ease renaming
                 payload = {
                     "source": str(filepath),
                     "chunk_index": idx,
@@ -386,15 +383,16 @@ class DocumentIndexer:
 
     def on_moved(self, event: FileSystemEvent):
         # TODO Implement folder and file renaming
-        src_abs_path = Path(event.src_path).resolve()
-        dest_abs_path = Path(event.dest_path).resolve()
-
         if event.is_directory:
-            rename_folder(src_abs_path, dest_abs_path)
-        else:
-            if src_abs_path.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
-                with self.lock:
-                    self.rename_file(src_abs_path, dest_abs_path)
+            return
+
+        srcpath = Path(event.src_path)
+        destpath = Path(event.dest_path)
+        if srcpath.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
+            with self.lock:
+                time.sleep(0.5)
+                self.remove_file(srcpath)
+                self.process_file(destpath)
 
     def start_watcher(self):
         event_handler = FileSystemEventHandler()
