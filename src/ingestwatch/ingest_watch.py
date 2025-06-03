@@ -375,8 +375,10 @@ def main():
         sys.exit(1)
 
     indexer = DocumentIndexer()
+
     # Initial full scan
     indexer.initial_scan()
+
     # Start the filesystem watcher loop
     indexer.start_watcher()
 

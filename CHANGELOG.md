@@ -10,4 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <small>[Compare with latest](https://github.com/ydethe/rag_indexer/compare/94eb7c1b309263c638f3e92cea40ebdc13d83ac1...HEAD)</small>
 
+### Added
+
+- Added sqlite db to keep track of the indexed files ([8f5c67f](https://github.com/ydethe/rag_indexer/commit/8f5c67ffa1c27698802ac9d3b1274b087656d5d9) by Yann de The).
+
 <!-- insertion marker -->
