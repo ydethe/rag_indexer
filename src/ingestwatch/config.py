@@ -16,6 +16,7 @@ class Config(BaseSettings):
     STATE_DB_PATH: Path
     COLLECTION_NAME: str
     EMBEDDING_MODEL: str
+    EMBEDDING_MODEL_TRUST_REMOTE_CODE: bool
     CHUNK_SIZE: int
     CHUNK_OVERLAP: int
     OCR_LANG: str

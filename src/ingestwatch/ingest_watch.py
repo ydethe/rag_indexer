@@ -2,11 +2,13 @@
 import os
 import sys
 import time
-import hashlib
+
+# import hashlib
 import sqlite3
 import threading
 from pathlib import Path
 from typing import Optional, List
+import uuid
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
@@ -92,7 +94,7 @@ class QdrantIndexer:
             self.client.recreate_collection(
                 collection_name=config.COLLECTION_NAME,
                 vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
-                on_disk=True,
+                on_disk_payload=True,
             )
             logger.info(
                 f"Created Qdrant collection '{config.COLLECTION_NAME}' (size={vector_size})."
@@ -216,7 +218,9 @@ def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
 class DocumentIndexer:
     def __init__(self):
         # Load embedding model
-        self.model = SentenceTransformer(config.EMBEDDING_MODEL)
+        self.model = SentenceTransformer(
+            config.EMBEDDING_MODEL, trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE
+        )
         self.vector_size = self.model.get_sentence_embedding_dimension()
         # Initialize Qdrant
         self.qdrant = QdrantIndexer()
@@ -252,7 +256,8 @@ class DocumentIndexer:
             # Use SHA1 of path + chunk index as unique point ID
             for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
                 # point_id: sha1(path + '::' + str(idx))
-                pid = hashlib.sha1(f"{abspath}::{idx}".encode("utf-8")).hexdigest()
+                # pid = hashlib.sha1(f"{abspath}::{idx}".encode("utf-8")).hexdigest()
+                pid = str(uuid.uuid4())
                 payload = {
                     "source": abspath,
                     "chunk_index": idx,
@@ -329,6 +334,7 @@ class DocumentIndexer:
                 self.remove_file(stored_path)
 
     def on_created_or_modified(self, event: FileSystemEvent):
+        # TODO If a file is modified, do not add a point in the qdrant database but upsert it
         if event.is_directory:
             return
         _, ext = os.path.splitext(event.src_path.lower())
@@ -366,6 +372,8 @@ class DocumentIndexer:
 
 
 def main():
+    nltk.download("punkt_tab")
+
     # Ensure state DB exists
     initialize_state_db()
 
