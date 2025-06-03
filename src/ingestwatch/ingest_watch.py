@@ -281,6 +281,7 @@ class DocumentIndexer:
                         int=int(hashlib.md5(f"{basename}::{idx}".encode("utf-8")).hexdigest(), 16)
                     )
                 )
+                # TODO Do not store a path, but rather a file hash to ease renaming
                 payload = {
                     "source": str(filepath),
                     "chunk_index": idx,
@@ -298,7 +299,7 @@ class DocumentIndexer:
         except Exception as e:
             logger.error(f"Error processing {filepath}: {e}")
 
-    def rename(self, src_abs_path, dest_abs_path):
+    def rename_file(self, src_abs_path, dest_abs_path):
         rename_stored_file(src_abs_path, dest_abs_path)
 
     def remove_file(self, abspath: str):
@@ -393,7 +394,7 @@ class DocumentIndexer:
         else:
             if src_abs_path.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
                 with self.lock:
-                    self.rename(src_abs_path, dest_abs_path)
+                    self.rename_file(src_abs_path, dest_abs_path)
 
     def start_watcher(self):
         event_handler = FileSystemEventHandler()
