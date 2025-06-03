@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
+import hashlib
 import os
 import sys
 import time
-
-# import hashlib
 import sqlite3
 import threading
 from pathlib import Path
@@ -12,7 +11,7 @@ import uuid
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
-
+import nltk
 from nltk.tokenize import sent_tokenize
 import pytesseract
 from pdf2image import convert_from_path
@@ -20,21 +19,21 @@ from PyPDF2 import PdfReader
 import docx
 import openpyxl
 
-import nltk
-
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance, PointStruct
+from qdrant_client.models import (
+    VectorParams,
+    Distance,
+    PointStruct,
+    Filter,
+    FieldCondition,
+    MatchValue,
+    PointIdsList,
+)
 
 from . import logger
 from .config import config
 
-
-# === Ensure NLTK punkt is available ===
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
 
 # === SQLite state DB helpers ===
 def initialize_state_db():
@@ -106,7 +105,8 @@ class QdrantIndexer:
 
     def delete(self, ids: List[str]):
         if ids:
-            self.client.delete(collection_name=config.COLLECTION_NAME, points_selector={"ids": ids})
+            pil = PointIdsList(points=ids)
+            self.client.delete(collection_name=config.COLLECTION_NAME, points_selector=pil)
 
 
 # === Text extraction per filetype ===
@@ -257,7 +257,12 @@ class DocumentIndexer:
             for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
                 # point_id: sha1(path + '::' + str(idx))
                 # pid = hashlib.sha1(f"{abspath}::{idx}".encode("utf-8")).hexdigest()
-                pid = str(uuid.uuid4())
+                # pid = str(uuid.uuid4())
+                pid = str(
+                    uuid.UUID(
+                        int=int(hashlib.md5(f"{abspath}::{idx}".encode("utf-8")).hexdigest(), 16)
+                    )
+                )
                 payload = {
                     "source": abspath,
                     "chunk_index": idx,
@@ -281,17 +286,19 @@ class DocumentIndexer:
         last‐modified in SQLite, we know it existed before; we'll iterate over state DB
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
         """
-        try:
+        # try:
+        if True:
             abspath = str(Path(filepath).resolve())
             logger.info(f"[DELETE] Removing file from index: {filepath}")
             # Query Qdrant for all points with payload.source == abspath
-            filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
+            # filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
+            filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=abspath))])
             # Retrieve IDs matching that filter
             hits = self.qdrant.client.search(
                 collection_name=config.COLLECTION_NAME,
                 query_vector=[0.0] * self.vector_size,  # dummy vector; we only want IDs
                 limit=1000,
-                filter=filter_,
+                query_filter=filter_,
             )
             ids_to_delete = [hit.id for hit in hits]
             if ids_to_delete:
@@ -299,8 +306,8 @@ class DocumentIndexer:
                 logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {filepath}")
             # Remove from state DB
             delete_stored_file(abspath)
-        except Exception as e:
-            logger.error(f"Error deleting {filepath} from index: {e}")
+        # except Exception as e:
+        #     logger.error(f"Error deleting {filepath} from index: {e}")
 
     def initial_scan(self):
         """
@@ -372,7 +379,9 @@ class DocumentIndexer:
 
 
 def main():
+    # === Ensure NLTK punkt is available ===
     nltk.download("punkt_tab")
+    nltk.download("punkt")
 
     # Ensure state DB exists
     initialize_state_db()
