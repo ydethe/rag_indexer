@@ -98,7 +98,10 @@ def rename_stored_file(srcpath: Path, destpath: Path):
 class QdrantIndexer:
     def __init__(self):
         self.client = QdrantClient(
-            host=config.QDRANT_HOST, port=config.QDRANT_PORT, api_key=config.QDRANT_API_KEY
+            host=config.QDRANT_HOST,
+            port=config.QDRANT_PORT,
+            api_key=config.QDRANT_API_KEY,
+            https=False,
         )
         # Check if collection exists; if not, create
         existing = [c.name for c in self.client.get_collections().collections]

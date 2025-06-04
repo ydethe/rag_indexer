@@ -10,9 +10,10 @@ RUN apt update && python3 -m pip install --upgrade pip && apt install -y \
 
 WORKDIR /code
 
-COPY dist/*.whl /code
 COPY requirements.txt /code
 RUN pip install -r requirements.txt
+
+COPY dist/*.whl /code
 RUN pip install -U /code/*.whl && rm -f /code/*.whl
 
 CMD ["ingestwatch"]
