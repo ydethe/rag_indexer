@@ -4,23 +4,28 @@ services:
     restart: unless-stopped
     # ports:
     #   - "6333:6333"    # Qdrant API
+    environment:
+      # Clé API principale (utilisée pour l’administration)
+      - QDRANT__SERVICE__API_KEY=$QDRANT__SERVICE__API_KEY
+      # Clé API en lecture seule (ne permet que GET, etc.):contentReference[oaicite:1]{index=1}
+      - QDRANT__SERVICE__READ_ONLY_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
     volumes:
       - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/qdrant_data:/qdrant/storage
-    # labels:
-    #   - "traefik.enable=true"
+    labels:
+      - "traefik.enable=true"
 
-    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
-    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
-    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
-    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
-    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
-    #   - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
+      - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
 
-    #   - "homepage.group=$HOME_GROUP"
-    #   - "homepage.name=$HOME_NAME - Qdrant"
-    #   - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
-    #   - "homepage.href=https://qdrant.$HOST/dashboard"
-    #   - "homepage.description=$HOME_DESCRIPTION"
+      - "homepage.group=$HOME_GROUP"
+      - "homepage.name=$HOME_NAME - Qdrant"
+      - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
+      - "homepage.href=https://qdrant.$HOST/dashboard"
+      - "homepage.description=$HOME_DESCRIPTION"
 
   ingestion:
     build: .
@@ -83,6 +88,7 @@ services:
       - ENABLE_OLLAMA_API=False
       - VECTOR_DB=qdrant
       - QDRANT_URI=http://$QDRANT_HOST:$QDRANT_PORT
+      - QDRANT_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
       - RAG_EMBEDDING_MODEL=$EMBEDDING_MODEL
       - CHUNK_SIZE=$CHUNK_SIZE
       - CHUNK_OVERLAP=$CHUNK_OVERLAP
