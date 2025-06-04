@@ -6,21 +6,21 @@ services:
     #   - "6333:6333"    # Qdrant API
     volumes:
       - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/qdrant_data:/qdrant/storage
-    labels:
-      - "traefik.enable=true"
+    # labels:
+    #   - "traefik.enable=true"
 
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
-      - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
+    #   - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
 
-      - "homepage.group=$HOME_GROUP"
-      - "homepage.name=$HOME_NAME - Qdrant"
-      - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
-      - "homepage.href=https://qdrant.$HOST/dashboard"
-      - "homepage.description=$HOME_DESCRIPTION"
+    #   - "homepage.group=$HOME_GROUP"
+    #   - "homepage.name=$HOME_NAME - Qdrant"
+    #   - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
+    #   - "homepage.href=https://qdrant.$HOST/dashboard"
+    #   - "homepage.description=$HOME_DESCRIPTION"
 
   ingestion:
     build: .
@@ -34,7 +34,6 @@ services:
       - LOGLEVEL=$LOGLEVEL
       - QDRANT_HOST=$QDRANT_HOST
       - QDRANT_PORT=$QDRANT_PORT
-      - OPENAI_API_KEY=$OPENAI_API_KEY
       - DOCS_PATH=$DOCS_PATH
       - STATE_DB_PATH=$STATE_DB_PATH
       - COLLECTION_NAME=$COLLECTION_NAME
@@ -74,75 +73,103 @@ services:
   #     - "homepage.href=https://$HOST"
   #     - "homepage.description=$HOME_DESCRIPTION"
 
-  # ui:
-  #   image: ghcr.io/open-webui/open-webui:main
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - qdrant
-  #   environment:
-  #     - OPENAI_API_KEY=$OPENAI_API_KEY
-  #     - ENABLE_OLLAMA_API=False
-  #     - VECTOR_DB=qdrant
-  #     - QDRANT_URI=http://$COMPOSE_PROJECT_NAME-qdrant-1:$QDRANT_PORT
-  #     - RAG_EMBEDDING_MODEL=$EMBEDDING_MODEL
-  #     - CHUNK_SIZE=$CHUNK_SIZE
-  #     - CHUNK_OVERLAP=$CHUNK_OVERLAP
-  #   volumes:
-  #     - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/webui_data:/app/backend/data
-  #   labels:
-  #     - "traefik.enable=true"
-
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.rule=Host(`$HOST`)"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.entrypoints=websecure"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.tls.certresolver=letsencrypt"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.middlewares=forward-auth-verify"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.service=$COMPOSE_PROJECT_NAME-ui"
-  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME-ui.loadbalancer.server.port=8080"
-
-  #     - "homepage.group=$HOME_GROUP"
-  #     - "homepage.name=$HOME_NAME"
-  #     - "homepage.icon=$HOME_ICON"
-  #     - "homepage.href=https://$HOST"
-  #     - "homepage.description=$HOME_DESCRIPTION"
-
   ui:
-    image: mintplexlabs/anythingllm:latest
+    image: ghcr.io/open-webui/open-webui:main
     restart: unless-stopped
-    cap_add:
-      - SYS_ADMIN
-    user: 1000:1000
+    depends_on:
+      - qdrant
     environment:
-      - PORT=3001
-      - NODE_ENV=production
+      - OPENAI_API_KEY=$OPENAI_API_KEY
+      - ENABLE_OLLAMA_API=False
       - VECTOR_DB=qdrant
-      - QDRANT_URL=http://$QDRANT_HOST:$QDRANT_PORT
-      - STORAGE_DIR=/app/server/storage
-      - TARGET_OCR_LANG=$OCR_LANG
-      - SIG_KEY=$SIG_KEY
-      - SIG_SALT=$SIG_SALT
-      - LLM_PROVIDER=$LLM_PROVIDER
-      - OPEN_MODEL_PREF=$OPEN_MODEL_PREF
-      - EMBEDDING_ENGINE='openai'
-      - OPEN_AI_KEY=$OPENAI_API_KEY
-      - EMBEDDING_MODEL_PREF=$EMBEDDING_MODEL
+      - QDRANT_URI=http://$COMPOSE_PROJECT_NAME-qdrant-1:$QDRANT_PORT
+      - RAG_EMBEDDING_MODEL=$EMBEDDING_MODEL
+      - CHUNK_SIZE=$CHUNK_SIZE
+      - CHUNK_OVERLAP=$CHUNK_OVERLAP
     volumes:
-      - "$JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/server/storage:/app/server/storage"
-      - "$JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/collector/hotdir/:/app/collector/hotdir"
-      - "$JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/collector/outputs/:/app/collector/outputs"
+      - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/webui_data:/app/backend/data
     labels:
       - "traefik.enable=true"
 
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
-      - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=3001"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.middlewares=forward-auth-verify"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.rule=Host(`$HOST`)"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.entrypoints=websecure"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.middlewares=forward-auth-verify"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.service=$COMPOSE_PROJECT_NAME-ui"
+      - "traefik.http.services.$COMPOSE_PROJECT_NAME-ui.loadbalancer.server.port=8080"
 
       - "homepage.group=$HOME_GROUP"
       - "homepage.name=$HOME_NAME"
       - "homepage.icon=$HOME_ICON"
-      - "homepage.href=https://${HOST}"
+      - "homepage.href=https://$HOST"
       - "homepage.description=$HOME_DESCRIPTION"
+
+  # ui:
+  #   image: mintplexlabs/anythingllm:latest
+  #   restart: unless-stopped
+  #   user: 1000:1000
+  #   ports:
+  #     - 3001:3001
+  #   environment:
+  #     - PORT=3001
+  #     - NODE_ENV=production
+  #     - VECTOR_DB=qdrant
+  #     - QDRANT_URL=http://$QDRANT_HOST:$QDRANT_PORT
+  #     - STORAGE_DIR=/app/server/storage
+  #     - TARGET_OCR_LANG=$OCR_LANG
+  #     - SIG_KEY=$SIG_KEY
+  #     - SIG_SALT=$SIG_SALT
+  #     - LLM_PROVIDER=$LLM_PROVIDER
+  #     - OPEN_MODEL_PREF=$OPEN_MODEL_PREF
+  #     - EMBEDDING_ENGINE='openai'
+  #     - OPEN_AI_KEY=$OPENAI_API_KEY
+  #     - EMBEDDING_MODEL_PREF=$EMBEDDING_MODEL
+  #   volumes:
+  #     - "$JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/server/storage:/app/server/storage"
+  #     - "$JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/collector/hotdir/:/app/collector/hotdir"
+  #     - "$JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/collector/outputs/:/app/collector/outputs"
+  #   labels:
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.rule=Host(`poney.johncloud.fr`)"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.entrypoints=websecure"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.tls.certresolver=letsencrypt"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.middlewares=forward-auth-verify"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.service=$COMPOSE_PROJECT_NAME-ui"
+  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME-ui.loadbalancer.server.port=3001"
+
+  #     - "homepage.group=$HOME_GROUP"
+  #     - "homepage.name=$HOME_NAME"
+  #     - "homepage.icon=$HOME_ICON"
+  #     - "homepage.href=https://poney.johncloud.fr"
+  #     - "homepage.description=$HOME_DESCRIPTION"
+
+  # ui:
+  #   image: roshanpatil/ai-chatbot:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - DOMAIN=
+  #     - OPENAI_API_TYPE='open_ai'
+  #     - OPENAI_API_BASE=https://api.openai.com
+  #     - OPENAI_API_KEY=$OPENAI_API_KEY
+  #     - OPENAI_API_VERSION=v1
+  #     - OPENAI_DEPLOYMENT_ID=
+  #     - QDRANT_URL=$QDRANT_HOST:$QDRANT_PORT
+  #     - QDRANT_API_KEY=
+  #     - QDRANT_COLLECTION_NAME=$COLLECTION_NAME
+  #   labels:
+  #     - "traefik.enable=true"
+
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.middlewares=forward-auth-verify"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.service=$COMPOSE_PROJECT_NAME"
+  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=8080"
+
+  #     - "homepage.group=$HOME_GROUP"
+  #     - "homepage.name=$HOME_NAME"
+  #     - "homepage.icon=$HOME_ICON"
+  #     - "homepage.href=https://${HOST}"
+  #     - "homepage.description=$HOME_DESCRIPTION"
 
 networks:
   default:

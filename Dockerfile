@@ -5,7 +5,8 @@ RUN apt update && python3 -m pip install --upgrade pip && apt install -y \
     tesseract-ocr-eng \
     tesseract-ocr-fra \
     poppler-utils \
-    libgl1
+    libgl1 \
+    python3-nltk
 
 WORKDIR /code
 
