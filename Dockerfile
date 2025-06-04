@@ -2,6 +2,8 @@ FROM python:3.13
 
 RUN apt update && python3 -m pip install --upgrade pip && apt install -y \
     tesseract-ocr \
+    tesseract-eng \
+    tesseract-fra \
     poppler-utils \
     libgl1
 

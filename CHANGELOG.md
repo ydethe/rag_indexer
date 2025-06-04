@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added progress bars for file analysis. pdf tested OK ([be49834](https://github.com/ydethe/rag_indexer/commit/be49834155c7b30d3ad5a4abfd08174d3cd229fe) by Yann de The).
 - Added sqlite db to keep track of the indexed files ([8f5c67f](https://github.com/ydethe/rag_indexer/commit/8f5c67ffa1c27698802ac9d3b1274b087656d5d9) by Yann de The).
 
 <!-- insertion marker -->
