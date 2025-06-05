@@ -1,6 +1,7 @@
 import gradio as gr
 from sentence_transformers import SentenceTransformer
-import openai
+from openai import OpenAI
+from openai.types.responses import Response
 import os
 import re
 
@@ -11,7 +12,10 @@ from .QdrantIndexer import QdrantIndexer
 class ChatDocFontend(object):
     def __init__(self):
         # --- Configuration ---
-        openai.api_key = config.OPENAI_API_KEY
+        self.openai = OpenAI(
+            # This is the default and can be omitted
+            api_key=config.OPENAI_API_KEY,
+        )
         self.base_url = "http://localhost:8000/static/docs/"
 
         # --- Initialisation ---
@@ -79,13 +83,13 @@ class ChatDocFontend(object):
     Réponse (avec citations) :
     """
 
-        response = openai.ChatCompletion.create(
+        response: Response = self.openai.responses.create(
+            input=prompt,
             model=config.OPEN_MODEL_PREF,
-            messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
         )
 
-        raw_answer = response["choices"][0]["message"]["content"]
+        raw_answer = response.output_text
         answer = self.link_citations(raw_answer)
 
         full_output = f"""

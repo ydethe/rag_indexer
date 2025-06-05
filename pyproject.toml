@@ -5,7 +5,7 @@ build-backend = "pdm.backend"
 [project]
 name = "ingestwatch"
 dynamic = ["version"]
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "watchdog>=2.1.9",
     "qdrant-client>=1.6.0",

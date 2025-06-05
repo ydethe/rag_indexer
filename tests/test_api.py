@@ -1,6 +1,6 @@
 import unittest
 
-from ingestwatch.ingest_watch import main
+from ingestwatch.__main__ import main
 
 
 class TestIngestWatch(unittest.TestCase):
