@@ -11,9 +11,6 @@ RUN apt update && apt install -y \
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN --mount=type=cache,target=/root/.cache/pip python3 -m venv venv && ./venv/bin/python -m pip install -U pip -r requirements.txt
-
 COPY dist/*.whl .
 RUN ./venv/bin/python -m pip install -U *.whl && rm -f *.whl
 
