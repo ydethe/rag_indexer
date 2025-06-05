@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
-- Removed cuda whl files ([bf97aad](https://github.com/ydethe/rag_indexer/commit/bf97aad75147e326ba768f58fca02661371042e5) by Yann de The).
+- Removed cuda whl files ([19f1b4c](https://github.com/ydethe/rag_indexer/commit/19f1b4cc9b75aa7c21ed6f75186a07a8c7683883) by Yann de The).
 - Removed openapi key from ingestion image ([a56abcb](https://github.com/ydethe/rag_indexer/commit/a56abcb933960ce1a4a4cea974bc23ec51b37607) by Yann de The).
 
 <!-- insertion marker -->

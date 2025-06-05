@@ -12,7 +12,7 @@ RUN apt update && apt install -y \
 WORKDIR /app
 
 COPY dist/*.whl .
-RUN ./venv/bin/python -m pip install -U *.whl && rm -f *.whl
+RUN python3 -m venv venv && ./venv/bin/python -m pip install -U *.whl && rm -f *.whl
 
 # # Stage 2: Production
 # FROM python:3.13
