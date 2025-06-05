@@ -20,6 +20,7 @@ dependencies = [
     "rich>=14.0.0",
     "openai>=1.84.0",
     "gradio>=5.33.0",
+    "markdown>=3.8",
 ]
 
 [project.urls]

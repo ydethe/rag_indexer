@@ -1,5 +1,6 @@
 # Stage 1: Build
-FROM python:3.13 AS builder
+# FROM python:3.13 AS builder
+FROM python:3.13
 
 RUN apt update && apt install -y \
     tesseract-ocr \
@@ -16,14 +17,14 @@ RUN --mount=type=cache,target=/root/.cache/pip python3 -m venv venv && ./venv/bi
 COPY dist/*.whl .
 RUN ./venv/bin/python -m pip install -U *.whl && rm -f *.whl
 
-# Stage 2: Production
-FROM python:3.13
+# # Stage 2: Production
+# FROM python:3.13
 
 # Set the working directory
-WORKDIR /app
+# WORKDIR /app
 
-# Copy only the necessary files from the build stage
-COPY --from=builder . .
+# # Copy only the necessary files from the build stage
+# COPY --from=builder . .
 
 # Expose the port the app will run on
 EXPOSE 7860

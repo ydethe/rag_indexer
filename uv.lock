@@ -592,10 +592,11 @@ wheels = [
 
 [[package]]
 name = "ingestwatch"
-version = "0.1.dev28+gb04e56c.d20250605"
+version = "0.1+d20250605"
 source = { editable = "." }
 dependencies = [
     { name = "gradio" },
+    { name = "markdown" },
     { name = "nltk" },
     { name = "openai" },
     { name = "openpyxl" },
@@ -635,6 +636,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "gradio", specifier = ">=5.33.0" },
+    { name = "markdown", specifier = ">=3.8" },
     { name = "nltk", specifier = ">=3.7" },
     { name = "openai", specifier = ">=1.84.0" },
     { name = "openpyxl", specifier = ">=3.1.2" },

@@ -1,10 +1,13 @@
+from pathlib import Path
+import re
+
+import markdown
 import gradio as gr
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 from openai.types.responses import Response
-import os
-import re
 
+from . import logger
 from .config import config
 from .QdrantIndexer import QdrantIndexer
 
@@ -47,8 +50,8 @@ class ChatDocFontend(object):
 
         for i, hit in enumerate(hits):
             text = hit.payload.get("text", "")
-            source_file = hit.payload.get("source", "source inconnue")
-            source_name = os.path.basename(source_file)
+            source_file = Path(hit.payload.get("source", "source inconnue"))
+            source_name = source_file.parts[-1]
             num = len(sources_seen) + 1
 
             context_chunks.append(f"[{num}] {text}")
@@ -56,19 +59,15 @@ class ChatDocFontend(object):
             # Si on n'a pas encore affiché ce fichier
             if source_file not in sources_seen:
                 sources_seen[source_file] = num
-                if source_file.endswith(".pdf"):
+                if source_file.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
                     html_sources += f"""
                     <div id="src{num}" style='margin-top:20px; padding:10px; border:1px solid #ccc;'>
-                        <b>[{num}] {source_name}</b><br>
+                        <b>[{num}] {source_file}</b><br>
                         <iframe src="{self.base_url}{source_name}" width="100%" height="300px"></iframe>
                     </div>
                     """
                 else:
-                    html_sources += f"""
-                    <div id="src{num}" style='margin-top:20px;'>
-                        <b>[{num}]</b> <a href="{self.base_url}{source_name}" target="_blank">{source_name}</a>
-                    </div>
-                    """
+                    logger.warning(f"Source not handled '{source_file}'")
 
         context = "\n\n".join(context_chunks)
 
@@ -89,8 +88,8 @@ class ChatDocFontend(object):
             temperature=0.3,
         )
 
-        raw_answer = response.output_text
-        answer = self.link_citations(raw_answer)
+        html_answer = markdown.markdown(response.output_text)
+        answer = self.link_citations(html_answer)
 
         full_output = f"""
         <div style='font-family:Arial, sans-serif; line-height:1.5;'>{answer}</div>
@@ -110,4 +109,4 @@ class ChatDocFontend(object):
             title="RAG avec citations cliquables et aperçus de documents",
         )
 
-        iface.launch()
+        iface.launch(server_name="0.0.0.0")
