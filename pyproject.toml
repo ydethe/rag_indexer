@@ -37,9 +37,6 @@ target-version = ['py310']
 [tool.uv]
 resolution = "highest"
 
-[project.scripts]
-ingestwatch = "ingestwatch.main:main"
-
 [tool.pdm.version]
 source = "scm"
 

@@ -8,4 +8,4 @@ sudo docker compose pull
 sudo docker compose build
 sudo docker compose down
 sudo docker compose up --remove-orphans -d
-sudo docker compose logs -f ui
+sudo docker compose logs -f

@@ -512,7 +512,7 @@ wheels = [
 
 [[package]]
 name = "ingestwatch"
-version = "0.1.dev25+g8e2c8c9.d20250605"
+version = "0.1.dev27+g965d953.d20250605"
 source = { editable = "." }
 dependencies = [
     { name = "gradio" },

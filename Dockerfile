@@ -1,19 +1,31 @@
-FROM python:3.13
+# Stage 1: Build
+FROM python:3.13 AS builder
 
 RUN apt update && python3 -m pip install --upgrade pip && apt install -y \
     tesseract-ocr \
     tesseract-ocr-eng \
     tesseract-ocr-fra \
     poppler-utils \
-    libgl1 \
-    python3-nltk
+    libgl1
 
 WORKDIR /code
 
-COPY requirements.txt /code
-RUN pip install -r requirements.txt
+COPY requirements.txt .
+RUN python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt
 
-COPY dist/*.whl /code
-RUN pip install -U /code/*.whl && rm -f /code/*.whl
+COPY dist/*.whl .
+RUN .venv/bin/python -m pip install -U *.whl && rm -f *.whl
 
-CMD ["ingestwatch"]
+# Stage 2: Production
+FROM python:3.13
+
+# Set the working directory
+WORKDIR /code
+
+# Copy only the necessary files from the build stage
+COPY --from=builder . .
+
+# Expose the port the app will run on
+EXPOSE 7860
+
+CMD [ ".venv/bin/python3", "-m" , "ingestwatch"]
