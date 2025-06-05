@@ -7,20 +7,23 @@ name = "ingestwatch"
 dynamic = ["version"]
 requires-python = ">=3.11"
 dependencies = [
-    "watchdog>=2.1.9",
-    "qdrant-client>=1.6.0",
-    "sentence-transformers>=2.2.2",
-    "PyPDF2>=3.0.0",
-    "python-docx>=0.8.11",
-    "openpyxl>=3.1.2",
-    "pytesseract>=0.3.10",
-    "pdf2image>=1.16.3",
-    "nltk>=3.7",
-    "pydantic-settings>=2.9.1",
-    "rich>=14.0.0",
-    "openai>=1.84.0",
     "gradio>=5.33.0",
     "markdown>=3.8",
+    "nltk>=3.9.1",
+    "openai>=1.84.0",
+    "openpyxl>=3.1.5",
+    "pdf2image>=1.17.0",
+    "pydantic-settings>=2.9.1",
+    "pypdf2>=3.0.1",
+    "pytesseract>=0.3.13",
+    "python-docx>=1.1.2",
+    "qdrant-client>=1.14.2",
+    "rich>=14.0.0",
+    "sentence-transformers>=4.1.0",
+    "torch>=2.7.1",
+    "torchaudio>=2.7.1",
+    "torchvision>=0.22.1",
+    "watchdog>=6.0.0",
 ]
 
 [project.urls]
@@ -37,6 +40,16 @@ target-version = ['py310']
 
 [tool.uv]
 resolution = "highest"
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+torchaudio = { index = "pytorch" }
+torchvision = { index = "pytorch" }
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.pdm.version]
 source = "scm"

@@ -22,13 +22,8 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install the project
-        run: uv sync --all-extras --all-groups
-
       - name: Build wheel and install
-        run: |
-          uv export --no-editable --no-emit-project -o requirements.txt > /dev/null
-          uv build
+        run: uv build
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
