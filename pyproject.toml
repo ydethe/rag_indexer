@@ -20,9 +20,9 @@ dependencies = [
     "qdrant-client>=1.14.2",
     "rich>=14.0.0",
     "sentence-transformers>=4.1.0",
-    "torch>=2.7.1",
-    "torchaudio>=2.7.1",
-    "torchvision>=0.22.1",
+    "torch",
+    "torchaudio",
+    "torchvision",
     "watchdog>=6.0.0",
 ]
 

@@ -31,8 +31,7 @@ services:
     depends_on:
       - qdrant
     volumes:
-      - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/docs:/docs
-      - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME:/code
+      - $JOHNCLOUD_ROOT/sftpgo/data/ydethe/Documents:/docs
     environment:
       - LOGLEVEL=$LOGLEVEL
       - QDRANT_HOST=$QDRANT_HOST

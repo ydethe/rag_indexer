@@ -1,6 +1,5 @@
 # Stage 1: Build
-# FROM python:3.13 AS builder
-FROM python:3.13
+FROM python:3.13-slim AS builder
 
 RUN apt update && apt install -y \
     tesseract-ocr \
@@ -12,18 +11,21 @@ RUN apt update && apt install -y \
 WORKDIR /app
 
 COPY dist/*.whl .
-RUN python3 -m venv venv && ./venv/bin/python -m pip install -U *.whl && rm -f *.whl
+RUN python3 -m venv venv --system-site-packages && \
+    ./venv/bin/python -m pip install --no-cache-dir *.whl && \
+    rm -f *.whl && \
+    find /app/venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
 
-# # Stage 2: Production
-# FROM python:3.13
+# Stage 2: Production
+FROM python:3.13-slim
 
 # Set the working directory
-# WORKDIR /app
+WORKDIR /app
 
-# # Copy only the necessary files from the build stage
-# COPY --from=builder . .
+# Copy only the necessary files from the build stage
+COPY --from=builder /app /app
 
 # Expose the port the app will run on
 EXPOSE 7860
 
-CMD ["./venv/bin/python", "-m" , "ingestwatch"]
+CMD ["/app/venv/bin/python", "-m" , "ingestwatch"]

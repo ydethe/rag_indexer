@@ -79,14 +79,13 @@ def extract_text_from_pdf(path: str) -> str:
     text_chunks = []
     try:
         reader = PdfReader(path)
-        for page in rp.track(
-            reader.pages, description=f"Reading {len(reader.pages)} pages pdf file"
-        ):
+        nb_pages = len(reader.pages)
+        for page in rp.track(reader.pages, description=f"Reading {nb_pages} pages pdf file"):
             txt = page.extract_text() or ""
             text_chunks.append(txt)
         full_text = "\n".join(text_chunks).strip()
         # If nearly empty, fallback to OCR
-        if len(full_text) < 100:
+        if len(full_text) < 10 * nb_pages:
             logger.info(f"PDF text is too short; falling back to OCR: {path}")
             return ocr_pdf(path)
         return full_text

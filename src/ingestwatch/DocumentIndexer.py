@@ -201,14 +201,17 @@ class DocumentIndexer:
         event_handler.on_moved = self.on_moved
         event_handler.on_deleted = self.on_deleted
 
-        observer = Observer()
-        observer.schedule(event_handler, str(self.root), recursive=True)
-        observer.start()
+        self.__observer = Observer()
+        self.__observer.schedule(event_handler, str(self.root), recursive=True)
+        self.__observer.start()
 
         logger.info(f"Started file watcher on: {config.DOCS_PATH}")
         # try:
         #     while True:
         #         time.sleep(1)
         # except KeyboardInterrupt:
-        #     observer.stop()
-        # observer.join()
+        #     self.__observer.stop()
+        # self.__observer.join()
+
+    def join(self):
+        self.__observer.join()
