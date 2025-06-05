@@ -11,12 +11,13 @@ class Config(BaseSettings):
     LOGLEVEL: str
     QDRANT_HOST: str
     QDRANT_PORT: int
-    QDRANT_API_KEY: str
+    QDRANT_QUERY_LIMIT: int
     DOCS_PATH: Path
     STATE_DB_PATH: Path
     COLLECTION_NAME: str
     EMBEDDING_MODEL: str
     EMBEDDING_MODEL_TRUST_REMOTE_CODE: bool
+    OPEN_MODEL_PREF: str
     CHUNK_SIZE: int
     CHUNK_OVERLAP: int
     OCR_LANG: str

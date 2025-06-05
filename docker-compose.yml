@@ -2,52 +2,50 @@ services:
   qdrant:
     image: qdrant/qdrant:latest
     restart: unless-stopped
-    # ports:
-    #   - "6333:6333"    # Qdrant API
-    environment:
-      # Clé API principale (utilisée pour l’administration)
-      - QDRANT__SERVICE__API_KEY=$QDRANT__SERVICE__API_KEY
-      # Clé API en lecture seule (ne permet que GET, etc.):contentReference[oaicite:1]{index=1}
-      - QDRANT__SERVICE__READ_ONLY_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
+    ports:
+      - "6333:6333"    # Qdrant API
+    # environment:
+    #   - QDRANT__SERVICE__API_KEY=$QDRANT__SERVICE__API_KEY
+    #   - QDRANT__SERVICE__READ_ONLY_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
     volumes:
       - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/qdrant_data:/qdrant/storage
-    labels:
-      - "traefik.enable=true"
+    # labels:
+    #   - "traefik.enable=true"
 
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
-      - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
+    #   - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
+    #   - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
 
-      - "homepage.group=$HOME_GROUP"
-      - "homepage.name=$HOME_NAME - Qdrant"
-      - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
-      - "homepage.href=https://qdrant.$HOST/dashboard"
-      - "homepage.description=$HOME_DESCRIPTION"
+    #   - "homepage.group=$HOME_GROUP"
+    #   - "homepage.name=$HOME_NAME - Qdrant"
+    #   - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
+    #   - "homepage.href=https://qdrant.$HOST/dashboard"
+    #   - "homepage.description=$HOME_DESCRIPTION"
 
-  ingestion:
-    build: .
-    restart: unless-stopped
-    depends_on:
-      - qdrant
-    volumes:
-      - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/docs:/docs
-      - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME:/code
-    environment:
-      - LOGLEVEL=$LOGLEVEL
-      - QDRANT_HOST=$QDRANT_HOST
-      - QDRANT_PORT=$QDRANT_PORT
-      - QDRANT_API_KEY=$QDRANT__SERVICE__API_KEY
-      - DOCS_PATH=$DOCS_PATH
-      - STATE_DB_PATH=$STATE_DB_PATH
-      - COLLECTION_NAME=$COLLECTION_NAME
-      - EMBEDDING_MODEL=$EMBEDDING_MODEL
-      - EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
-      - CHUNK_SIZE=$CHUNK_SIZE
-      - CHUNK_OVERLAP=$CHUNK_OVERLAP
-      - OCR_LANG=$OCR_LANG
+  # ingestion:
+  #   build: .
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - qdrant
+  #   volumes:
+  #     - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/docs:/docs
+  #     - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME:/code
+  #   environment:
+  #     - LOGLEVEL=$LOGLEVEL
+  #     - QDRANT_HOST=$QDRANT_HOST
+  #     - QDRANT_PORT=$QDRANT_PORT
+  #     - QDRANT_API_KEY=$QDRANT__SERVICE__API_KEY
+  #     - DOCS_PATH=$DOCS_PATH
+  #     - STATE_DB_PATH=$STATE_DB_PATH
+  #     - COLLECTION_NAME=$COLLECTION_NAME
+  #     - EMBEDDING_MODEL=$EMBEDDING_MODEL
+  #     - EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
+  #     - CHUNK_SIZE=$CHUNK_SIZE
+  #     - CHUNK_OVERLAP=$CHUNK_OVERLAP
+  #     - OCR_LANG=$OCR_LANG
 
   # ui:
   #   image: ghcr.io/cinnamon/kotaemon:main-ollama
@@ -79,37 +77,42 @@ services:
   #     - "homepage.href=https://$HOST"
   #     - "homepage.description=$HOME_DESCRIPTION"
 
-  ui:
-    image: ghcr.io/open-webui/open-webui:main
-    restart: unless-stopped
-    depends_on:
-      - qdrant
-    environment:
-      - OPENAI_API_KEY=$OPENAI_API_KEY
-      - ENABLE_OLLAMA_API=False
-      - VECTOR_DB=qdrant
-      - QDRANT_URI=http://$QDRANT_HOST:$QDRANT_PORT
-      - QDRANT_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
-      - RAG_EMBEDDING_MODEL=$EMBEDDING_MODEL
-      - CHUNK_SIZE=$CHUNK_SIZE
-      - CHUNK_OVERLAP=$CHUNK_OVERLAP
-    volumes:
-      - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/webui_data:/app/backend/data
-    labels:
-      - "traefik.enable=true"
+  # ui:
+  #   image: ghcr.io/open-webui/open-webui:main
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - qdrant
+  #   environment:
+  #     - WEBUI_SECRET_KEY=$WEBUI_SECRET_KEY
+  #     - RAG_WEB_SEARCH_TRUST_ENV=True
+  #     - GLOBAL_LOG_LEVEL=DEBUG
+  #     - DEFAULT_USER_ROLE=pending
+  #     - OPENAI_API_KEY=$OPENAI_API_KEY
+  #     - ENABLE_OLLAMA_API=False
+  #     - VECTOR_DB=qdrant
+  #     - QDRANT_URI=http://$QDRANT_HOST:$QDRANT_PORT
+  #     # - QDRANT_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
+  #     - RAG_EMBEDDING_MODEL=$EMBEDDING_MODEL
+  #     - RAG_EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
+  #     - CHUNK_SIZE=$CHUNK_SIZE
+  #     - CHUNK_OVERLAP=$CHUNK_OVERLAP
+  #   volumes:
+  #     - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/webui_data:/app/backend/data
+  #   labels:
+  #     - "traefik.enable=true"
 
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.rule=Host(`$HOST`)"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.entrypoints=websecure"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.middlewares=forward-auth-verify"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.service=$COMPOSE_PROJECT_NAME-ui"
-      - "traefik.http.services.$COMPOSE_PROJECT_NAME-ui.loadbalancer.server.port=8080"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.rule=Host(`$HOST`)"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.entrypoints=websecure"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.tls.certresolver=letsencrypt"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.middlewares=forward-auth-verify"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-ui.service=$COMPOSE_PROJECT_NAME-ui"
+  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME-ui.loadbalancer.server.port=8080"
 
-      - "homepage.group=$HOME_GROUP"
-      - "homepage.name=$HOME_NAME"
-      - "homepage.icon=$HOME_ICON"
-      - "homepage.href=https://$HOST"
-      - "homepage.description=$HOME_DESCRIPTION"
+  #     - "homepage.group=$HOME_GROUP"
+  #     - "homepage.name=$HOME_NAME"
+  #     - "homepage.icon=$HOME_ICON"
+  #     - "homepage.href=https://$HOST"
+  #     - "homepage.description=$HOME_DESCRIPTION"
 
   # ui:
   #   image: mintplexlabs/anythingllm:latest
