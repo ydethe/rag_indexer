@@ -16,6 +16,7 @@ class Config(BaseSettings):
     DOCS_PATH: Path
     STATE_DB_PATH: Path
     COLLECTION_NAME: str
+    DAV_ROOT: str
     EMBEDDING_MODEL: str
     EMBEDDING_MODEL_TRUST_REMOTE_CODE: bool
     OPEN_MODEL_PREF: str

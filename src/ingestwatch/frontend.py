@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import time
 
 import markdown
 import gradio as gr
@@ -19,7 +20,6 @@ class ChatDocFontend(object):
             # This is the default and can be omitted
             api_key=config.OPENAI_API_KEY,
         )
-        self.base_url = "http://localhost:8000/static/docs/"
 
         # --- Initialisation ---
         self.encoder = SentenceTransformer(
@@ -42,7 +42,10 @@ class ChatDocFontend(object):
     def rag_with_anchored_sources(self, query):
         query_vector = self.encoder.encode(query).tolist()
 
+        t0 = time.time()
         hits = self.qdrant.search(query_vector=query_vector, limit=config.QDRANT_QUERY_LIMIT)
+        elapsed = time.time() - t0
+        logger.info(f"Vector search completed in {elapsed:.1f} s")
 
         context_chunks = []
         sources_seen = {}
@@ -63,7 +66,7 @@ class ChatDocFontend(object):
                     html_sources += f"""
                     <div id="src{num}" style='margin-top:20px; padding:10px; border:1px solid #ccc;'>
                         <b>[{num}] {source_file}</b><br>
-                        <iframe src="{self.base_url}{source_name}" width="100%" height="300px"></iframe>
+                        <iframe src="{config.DAV_ROOT}/{source_name}" width="100%" height="300px"></iframe>
                     </div>
                     """
                 else:
@@ -72,21 +75,24 @@ class ChatDocFontend(object):
         context = "\n\n".join(context_chunks)
 
         prompt = f"""
-    Tu es un assistant intelligent. Voici des extraits de documents numérotés. Utilise-les pour répondre précisément à la question. Cite les extraits utilisés avec leur numéro, comme ceci : [1].
+        Tu es un assistant intelligent. Voici des extraits de documents numérotés. Utilise-les pour répondre précisément à la question. Cite les extraits utilisés avec leur numéro, comme ceci : [1].
 
-    Contexte :
-    {context}
+        Contexte :
+        {context}
 
-    Question : {query}
+        Question : {query}
 
-    Réponse (avec citations) :
-    """
+        Réponse (avec citations) :
+        """
 
+        t0 = time.time()
         response: Response = self.openai.responses.create(
             input=prompt,
             model=config.OPEN_MODEL_PREF,
             temperature=0.3,
         )
+        elapsed = time.time() - t0
+        logger.info(f"LLM response got in {elapsed:.1f} s")
 
         html_answer = markdown.markdown(response.output_text)
         answer = self.link_citations(html_answer)
@@ -106,7 +112,7 @@ class ChatDocFontend(object):
             fn=self.rag_with_anchored_sources,
             inputs=gr.Textbox(label="Votre question"),
             outputs=gr.HTML(label="Réponse + sources"),
-            title="RAG avec citations cliquables et aperçus de documents",
+            title="Johncloud - ChatDoc",
         )
 
         iface.launch(server_name="0.0.0.0")
