@@ -36,7 +36,7 @@ max-line-length = 100
 
 [tool.black]
 line-length = 100
-target-version = ['py310']
+target-version = ['py311']
 
 [tool.uv]
 resolution = "highest"
