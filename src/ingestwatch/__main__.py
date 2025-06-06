@@ -22,7 +22,7 @@ def main():
 
     # Ensure documents folder exists
     if not config.DOCS_PATH.exists():
-        logger.error(f"Documents folder not found: {config.DOCS_PATH}")
+        logger.error(f"Documents folder not found: '{config.DOCS_PATH}'")
         sys.exit(1)
 
     indexer = DocumentIndexer()

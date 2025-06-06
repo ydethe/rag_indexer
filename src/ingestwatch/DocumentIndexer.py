@@ -64,10 +64,10 @@ class DocumentIndexer:
                 # No change
                 return
 
-            logger.info(f"[INDEX] Processing changed file: {filepath}")
+            logger.info(f"[INDEX] Processing changed file: '{filepath}'")
             text, file_metadata = extract_text(filepath)
             if not text:
-                logger.warning(f"No text extracted; skipping: {filepath}")
+                logger.warning(f"No text extracted; skipping: '{filepath}'")
                 return
 
             chunks = chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
@@ -106,7 +106,7 @@ class DocumentIndexer:
             logger.info(f"[INDEX] Upserted {len(points)} vectors")
 
         except Exception as e:
-            logger.error(f"Error processing {filepath}: {e}")
+            logger.error(f"Error processing '{filepath}': {e}")
 
     def rename_file(self, src_rel_path, dest_rel_path):
         rename_stored_file(src_rel_path, dest_rel_path)
@@ -118,7 +118,7 @@ class DocumentIndexer:
         last-modified in SQLite, we know it existed before; we'll iterate over state DB
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
         """
-        logger.info(f"[DELETE] Removing file from index: {relpath}")
+        logger.info(f"[DELETE] Removing file from index: '{relpath}'")
 
         # Query Qdrant for all points with payload.source == abspath
         # filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
@@ -130,7 +130,7 @@ class DocumentIndexer:
         ids_to_delete = [hit.id for hit in hits]
         if ids_to_delete:
             self.qdrant.delete(ids_to_delete)
-            logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {relpath}")
+            logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors")
 
         # Remove from state DB
         delete_stored_file(relpath)
@@ -208,7 +208,7 @@ class DocumentIndexer:
         self.__observer.schedule(event_handler, str(self.root), recursive=True)
         self.__observer.start()
 
-        logger.info(f"Started file watcher on: {config.DOCS_PATH}")
+        logger.info(f"Started file watcher on: '{config.DOCS_PATH}'")
         # try:
         #     while True:
         #         time.sleep(1)

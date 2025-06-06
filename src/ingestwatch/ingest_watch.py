@@ -107,13 +107,13 @@ def extract_text_from_pdf(path: Path) -> str:
 
         # If nearly empty, fallback to OCR
         if len(full_text) < 10 * nb_pages:
-            logger.info(f"PDF text is too short; falling back to OCR: {path}")
+            logger.info("PDF text is too short; falling back to OCR")
             return ocr_pdf(path), {"ocr_used": True}
 
         return full_text, {"ocr_used": False}
 
     except Exception as e:
-        logger.warning(f"Error extracting PDF text ({path}): {e}. Using OCR.")
+        logger.warning(f"Error extracting PDF text: {e}. Using OCR.")
         return ocr_pdf(path), {"ocr_used": True}
 
 
@@ -126,7 +126,7 @@ def ocr_pdf(path: Path) -> str:
             txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
             text.append(txt)
     except Exception as e:
-        logger.error(f"OCR failed for {path}: {e}")
+        logger.error(f"OCR failed: {e}")
     return "\n".join(text).strip()
 
 
@@ -138,7 +138,7 @@ def extract_text_from_docx(path: Path) -> str:
         paragraphs = [p.text for p in doc.paragraphs]
         return "\n".join(paragraphs).strip(), {"ocr_used": False}
     except Exception as e:
-        logger.error(f"Error reading DOCX ({path}): {e}")
+        logger.error(f"Error reading DOCX: {e}")
         return "", {"ocr_used": False}
 
 
@@ -154,7 +154,7 @@ def extract_text_from_xlsx(path: Path) -> str:
                     all_text.append(" ".join(row_text))
         return "\n".join(all_text).strip(), {"ocr_used": False}
     except Exception as e:
-        logger.error(f"Error reading XLSX ({path}): {e}")
+        logger.error(f"Error reading XLSX: {e}")
         return "", {"ocr_used": False}
 
 
@@ -163,7 +163,7 @@ def extract_text_from_md_or_txt(path: Path) -> str:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             return f.read(), {"ocr_used": False}
     except Exception as e:
-        logger.error(f"Error reading text file ({path}): {e}")
+        logger.error(f"Error reading text file: {e}")
         return "", {"ocr_used": False}
 
 
@@ -178,7 +178,7 @@ def extract_text(path: Path) -> Tuple[str, dict]:
     elif ext in (".md", ".txt"):
         return extract_text_from_md_or_txt(path)
     else:
-        logger.warning(f"Unsupported extension (skipping text extraction): {path}")
+        logger.warning("Unsupported extension (skipping text extraction)")
         return "", {}
 
 
