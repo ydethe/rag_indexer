@@ -39,11 +39,14 @@ class DocumentIndexer:
         #     config.EMBEDDING_MODEL,
         #     trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
         # )
-        model = SentenceTransformer(
+        self.model = SentenceTransformer(
             config.EMBEDDING_MODEL,
             trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
+            backend="openvino",
+            # 'openvino/openvino_model_qint8_quantized.xml', 'openvino/openvino_model.xml'
+            model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
         )
-        self.vector_size = model.get_sentence_embedding_dimension()
+        self.vector_size = self.model.get_sentence_embedding_dimension()
 
         # Initialize Qdrant
         self.qdrant = QdrantIndexer(vector_size=self.vector_size)
@@ -77,16 +80,13 @@ class DocumentIndexer:
             chunks = chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
             batch_size = 32
             embeddings = []
-            logger.info(f"Embedding {len(chunks)} chunks in {len(chunks)// batch_size} batches")
+            logger.info(f"Embedding {len(chunks)} chunks in {len(chunks)// batch_size+1} batches")
             for nb_batch in range(0, len(chunks), batch_size):
                 batch = chunks[nb_batch : nb_batch + batch_size]
-                model = SentenceTransformer(
-                    config.EMBEDDING_MODEL,
-                    trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
-                )
                 embeddings.extend(
-                    model.encode(batch, device="cpu", show_progress_bar=True).tolist()
+                    self.model.encode(batch, device="cpu", show_progress_bar=True).tolist()
                 )
+            # chunks=['']
             # embeddings = [[0. for _ in range(self.vector_size)] for _ in chunks]
 
             points: list[PointStruct] = []

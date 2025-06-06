@@ -19,6 +19,8 @@ from .config import config
 def initialize_state_db():
     os.makedirs(os.path.dirname(config.STATE_DB_PATH), exist_ok=True)
 
+    logger.info(f"Using sqlite database '{config.STATE_DB_PATH}'")
+
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
     c.execute(
@@ -95,9 +97,9 @@ def list_stored_files(absolute: bool = False) -> list[Path]:
 # === Text extraction per filetype ===
 def extract_text_from_pdf(path: Path) -> str:
     text_chunks = []
+    reader = PdfReader(path)
+    nb_pages = len(reader.pages)
     try:
-        reader = PdfReader(path)
-        nb_pages = len(reader.pages)
         logger.info(f"Reading {nb_pages} pages pdf file")
         for page in reader.pages:
             txt = page.extract_text() or ""
@@ -108,23 +110,26 @@ def extract_text_from_pdf(path: Path) -> str:
         # If nearly empty, fallback to OCR
         if len(full_text) < 10 * nb_pages:
             logger.info("PDF text is too short; falling back to OCR")
-            return ocr_pdf(path), {"ocr_used": True}
+            return ocr_pdf(path, nb_pages), {"ocr_used": True}
 
         return full_text, {"ocr_used": False}
 
     except Exception as e:
         logger.warning(f"Error extracting PDF text: {e}. Using OCR.")
-        return ocr_pdf(path), {"ocr_used": True}
+        return ocr_pdf(path, nb_pages), {"ocr_used": True}
 
 
-def ocr_pdf(path: Path) -> str:
+def ocr_pdf(path: Path, nb_pages: int) -> str:
     text = []
+    logger.info("OCR")
     try:
         # Convert each page to an image
-        images = convert_from_path(path)
-        for img in images:
-            txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
-            text.append(txt)
+        logger.info("pdf to images")
+        for k_page in range(1, 1 + nb_pages):
+            images = convert_from_path(path, first_page=k_page, last_page=k_page)
+            for img in images:
+                txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
+                text.append(txt)
     except Exception as e:
         logger.error(f"OCR failed: {e}")
     return "\n".join(text).strip()

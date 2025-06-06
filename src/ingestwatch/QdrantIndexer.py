@@ -25,12 +25,6 @@ class QdrantIndexer:
 
         self.vector_size = vector_size
 
-        # Check if collection exists; if not, create
-        existing = [c.name for c in self.__client.get_collections().collections]
-        if config.COLLECTION_NAME not in existing:
-            # We’ll determine vector size after loading the model
-            pass
-
     def search(
         self,
         query_vector: Union[
