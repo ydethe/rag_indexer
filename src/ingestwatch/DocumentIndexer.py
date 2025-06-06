@@ -71,9 +71,9 @@ class DocumentIndexer:
                 return
 
             chunks = chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
-            logger.info(f"Embedding {len(chunks)} chunks")
-            embeddings = []
             batch_size = 32
+            embeddings = []
+            logger.info(f"Embedding {len(chunks)} chunks in {len(chunks)// batch_size} batches")
             for nb_batch in range(0, len(chunks), batch_size):
                 batch = chunks[nb_batch : nb_batch + batch_size]
                 embeddings.extend(
