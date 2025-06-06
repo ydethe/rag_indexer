@@ -44,7 +44,7 @@ class QdrantIndexer:
         query_filter: Optional[types.Filter] = None,
     ):
         if query_vector is None:
-            query_vect = ([0.0] * self.vector_size,)  # dummy vector; we only want IDs
+            query_vect = [0.0] * self.vector_size  # dummy vector; we only want IDs
         else:
             query_vect = query_vector
 

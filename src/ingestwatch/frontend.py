@@ -113,6 +113,7 @@ class ChatDocFontend(object):
             inputs=gr.Textbox(label="Votre question"),
             outputs=gr.HTML(label="Réponse + sources"),
             title="Johncloud - ChatDoc",
+            flagging_mode="never",
         )
 
         iface.launch(server_name="0.0.0.0")

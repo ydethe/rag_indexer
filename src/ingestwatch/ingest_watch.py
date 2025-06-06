@@ -2,9 +2,8 @@
 import os
 import sqlite3
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
-import rich.progress as rp
 from nltk.tokenize import sent_tokenize
 import pytesseract
 from pdf2image import convert_from_path
@@ -19,6 +18,7 @@ from .config import config
 # === SQLite state DB helpers ===
 def initialize_state_db():
     os.makedirs(os.path.dirname(config.STATE_DB_PATH), exist_ok=True)
+
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
     c.execute(
@@ -33,27 +33,27 @@ def initialize_state_db():
     conn.close()
 
 
-def get_stored_timestamp(path: Path) -> Optional[float]:
+def get_stored_timestamp(relpath: Path) -> Optional[float]:
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT last_modified FROM files WHERE path = ?", (str(path),))
+    c.execute("SELECT last_modified FROM files WHERE path = ?", (str(relpath),))
     row = c.fetchone()
     conn.close()
     return row[0] if row else None
 
 
-def set_stored_timestamp(path: Path, ts: float):
+def set_stored_timestamp(relpath: Path, ts: float):
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
-    c.execute("REPLACE INTO files (path, last_modified) VALUES (?, ?)", (str(path), ts))
+    c.execute("REPLACE INTO files (path, last_modified) VALUES (?, ?)", (str(relpath), ts))
     conn.commit()
     conn.close()
 
 
-def delete_stored_file(path: Path):
+def delete_stored_file(relpath: Path):
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
-    c.execute("DELETE FROM files WHERE path = ?", (str(path),))
+    c.execute("DELETE FROM files WHERE path = ?", (str(relpath),))
     conn.commit()
     conn.close()
 
@@ -74,32 +74,55 @@ def rename_stored_file(srcpath: Path, destpath: Path):
     conn.close()
 
 
+def list_stored_files(absolute: bool = False) -> list[Path]:
+    conn = sqlite3.connect(config.STATE_DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT path FROM files")
+    rows = c.fetchall()
+    conn.close()
+
+    files_list = []
+    for (stored_path,) in rows:
+        relpath = Path(stored_path)
+        if absolute:
+            files_list.append(config.DOCS_PATH / relpath)
+        else:
+            files_list.append(relpath)
+
+    return files_list
+
+
 # === Text extraction per filetype ===
-def extract_text_from_pdf(path: str) -> str:
+def extract_text_from_pdf(path: Path) -> str:
     text_chunks = []
     try:
         reader = PdfReader(path)
         nb_pages = len(reader.pages)
-        for page in rp.track(reader.pages, description=f"Reading {nb_pages} pages pdf file"):
+        logger.info(f"Reading {nb_pages} pages pdf file")
+        for page in reader.pages:
             txt = page.extract_text() or ""
             text_chunks.append(txt)
+
         full_text = "\n".join(text_chunks).strip()
+
         # If nearly empty, fallback to OCR
         if len(full_text) < 10 * nb_pages:
             logger.info(f"PDF text is too short; falling back to OCR: {path}")
-            return ocr_pdf(path)
-        return full_text
+            return ocr_pdf(path), {"ocr_used": True}
+
+        return full_text, {"ocr_used": False}
+
     except Exception as e:
         logger.warning(f"Error extracting PDF text ({path}): {e}. Using OCR.")
-        return ocr_pdf(path)
+        return ocr_pdf(path), {"ocr_used": True}
 
 
-def ocr_pdf(path: str) -> str:
+def ocr_pdf(path: Path) -> str:
     text = []
     try:
         # Convert each page to an image
         images = convert_from_path(path)
-        for img in rp.track(images, description="Running OCR on pdf pages"):
+        for img in images:
             txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
             text.append(txt)
     except Exception as e:
@@ -107,59 +130,56 @@ def ocr_pdf(path: str) -> str:
     return "\n".join(text).strip()
 
 
-def extract_text_from_docx(path: str) -> str:
+def extract_text_from_docx(path: Path) -> str:
     try:
-        doc = docx.Document(path)
+        doc = docx.Document(str(path))
         page_count = sum(p.contains_page_break for p in doc.paragraphs) + 1
-        paragraphs = [
-            p.text
-            for p in rp.track(doc.paragraphs, description=f"Reading {page_count} pages doc file")
-        ]
-        return "\n".join(paragraphs).strip()
+        logger.info(f"Reading {page_count} pages doc file")
+        paragraphs = [p.text for p in doc.paragraphs]
+        return "\n".join(paragraphs).strip(), {"ocr_used": False}
     except Exception as e:
         logger.error(f"Error reading DOCX ({path}): {e}")
-        return ""
+        return "", {"ocr_used": False}
 
 
-def extract_text_from_xlsx(path: str) -> str:
+def extract_text_from_xlsx(path: Path) -> str:
     try:
         wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        logger.info(f"Reading {len(wb.worksheets)} pages excel file")
         all_text = []
-        for sheet in rp.track(
-            wb.worksheets, description=f"Reading {len(wb.worksheets)} pages excel file"
-        ):
+        for sheet in wb.worksheets:
             for row in sheet.iter_rows(values_only=True):
                 row_text = [str(cell) for cell in row if cell is not None]
                 if row_text:
                     all_text.append(" ".join(row_text))
-        return "\n".join(all_text).strip()
+        return "\n".join(all_text).strip(), {"ocr_used": False}
     except Exception as e:
         logger.error(f"Error reading XLSX ({path}): {e}")
-        return ""
+        return "", {"ocr_used": False}
 
 
-def extract_text_from_md_or_txt(path: str) -> str:
+def extract_text_from_md_or_txt(path: Path) -> str:
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            return f.read()
+            return f.read(), {"ocr_used": False}
     except Exception as e:
         logger.error(f"Error reading text file ({path}): {e}")
-        return ""
+        return "", {"ocr_used": False}
 
 
-def extract_text(path: str) -> str:
-    ext = path.lower().split(".")[-1]
-    if ext == "pdf":
+def extract_text(path: Path) -> Tuple[str, dict]:
+    ext = path.suffix.lower()
+    if ext == ".pdf":
         return extract_text_from_pdf(path)
-    elif ext in ("docx",):
+    elif ext in (".docx",):
         return extract_text_from_docx(path)
-    elif ext in ("xlsx", "xlsm", "xls"):
+    elif ext in (".xlsx", ".xlsm", ".xls"):
         return extract_text_from_xlsx(path)
-    elif ext in ("md", "txt"):
+    elif ext in (".md", ".txt"):
         return extract_text_from_md_or_txt(path)
     else:
         logger.warning(f"Unsupported extension (skipping text extraction): {path}")
-        return ""
+        return "", {}
 
 
 def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
@@ -169,7 +189,8 @@ def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
     sentences = sent_tokenize(text)
     chunks = []
     current_chunk = ""
-    for sent in rp.track(sentences, description="Building chunks"):
+    logger.info("Building chunks")
+    for sent in sentences:
         if len(current_chunk) + len(sent) + 1 <= chunk_size:
             current_chunk += " " + sent if current_chunk else sent
         else:

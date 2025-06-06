@@ -16,14 +16,14 @@ RUN python3 -m venv venv --system-site-packages && \
     rm -f *.whl && \
     find /app/venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
 
-# Stage 2: Production
-FROM python:3.13-slim
+# # Stage 2: Production
+# FROM python:3.13-slim
 
-# Set the working directory
-WORKDIR /app
+# # Set the working directory
+# WORKDIR /app
 
-# Copy only the necessary files from the build stage
-COPY --from=builder /app /app
+# # Copy only the necessary files from the build stage
+# COPY --from=builder /app /app
 
 # Expose the port the app will run on
 EXPOSE 7860

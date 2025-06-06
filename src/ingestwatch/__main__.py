@@ -1,6 +1,7 @@
 import sys
 
 import nltk
+import torch
 
 from .ingest_watch import initialize_state_db
 from .config import config
@@ -10,6 +11,8 @@ from .DocumentIndexer import DocumentIndexer
 
 
 def main():
+    torch.set_num_threads(3)
+
     # === Ensure NLTK punkt is available ===
     nltk.download("punkt_tab")
     nltk.download("punkt")

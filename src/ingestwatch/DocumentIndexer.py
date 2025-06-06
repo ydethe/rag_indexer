@@ -3,12 +3,10 @@
 import hashlib
 import os
 import time
-import sqlite3
 import threading
 from pathlib import Path
 import uuid
 
-import rich.progress as rp
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
@@ -28,6 +26,7 @@ from .ingest_watch import (
     get_stored_timestamp,
     rename_stored_file,
     set_stored_timestamp,
+    list_stored_files,
 )
 from .config import config
 from .QdrantIndexer import QdrantIndexer
@@ -37,7 +36,8 @@ class DocumentIndexer:
     def __init__(self):
         # Load embedding model
         self.model = SentenceTransformer(
-            config.EMBEDDING_MODEL, trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE
+            config.EMBEDDING_MODEL,
+            trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
         )
         self.vector_size = self.model.get_sentence_embedding_dimension()
 
@@ -57,65 +57,72 @@ class DocumentIndexer:
         The file ID in Qdrant will be a SHA1 of its absolute path.
         """
         try:
+            relpath = filepath.relative_to(config.DOCS_PATH)
             stat = os.path.getmtime(filepath)
-            stored = get_stored_timestamp(filepath)
+            stored = get_stored_timestamp(relpath)
             if stored is not None and stored == stat:
                 # No change
                 return
 
             logger.info(f"[INDEX] Processing changed file: {filepath}")
-            text = extract_text(str(filepath))
+            text, file_metadata = extract_text(filepath)
             if not text:
                 logger.warning(f"No text extracted; skipping: {filepath}")
                 return
 
             chunks = chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
             logger.info(f"Embedding {len(chunks)} chunks")
-            embeddings = self.model.encode(chunks, show_progress_bar=True)
+            embeddings = []
+            batch_size = 32
+            for nb_batch in range(0, len(chunks), batch_size):
+                batch = chunks[nb_batch : nb_batch + batch_size]
+                embeddings.extend(
+                    self.model.encode(batch, device="cpu", show_progress_bar=True).tolist()
+                )
+            # embeddings = [[0. for _ in range(self.vector_size)] for _ in chunks]
 
             points: list[PointStruct] = []
             # Use MD5 of path + chunk index as unique point ID
-            for idx, (chunk, emb) in rp.track(
-                enumerate(zip(chunks, embeddings)),
-                description=f"Building {len(chunks)} embeddings for qdrant",
-            ):
+            logger.info(f"Building {len(chunks)} embeddings for qdrant")
+            for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
                 pid = str(
                     uuid.UUID(
                         int=int(hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest(), 16)
                     )
                 )
                 payload = {
-                    "source": str(filepath),
+                    "source": str(relpath),
                     "chunk_index": idx,
                     "text": chunk,
+                    "ocr_used": file_metadata.get("ocr_used", False),
                 }
-                points.append(PointStruct(id=pid, vector=emb.tolist(), payload=payload))
+                points.append(PointStruct(id=pid, vector=emb, payload=payload))
 
             # Upsert into Qdrant
             self.qdrant.upsert(points)
 
             # Update state DB
-            set_stored_timestamp(filepath, stat)
-            logger.info(f"[INDEX] Upserted {len(points)} vectors from {filepath}")
+            set_stored_timestamp(relpath, stat)
+            logger.info(f"[INDEX] Upserted {len(points)} vectors")
 
         except Exception as e:
             logger.error(f"Error processing {filepath}: {e}")
 
-    def rename_file(self, src_abs_path, dest_abs_path):
-        rename_stored_file(src_abs_path, dest_abs_path)
+    def rename_file(self, src_rel_path, dest_rel_path):
+        rename_stored_file(src_rel_path, dest_rel_path)
 
-    def remove_file(self, abspath: str):
+    def remove_file(self, relpath: Path):
         """
         Delete all vectors whose payload.source == this file's absolute path.
         We identify by regenerating all chunk IDs for old state—but since we store
         last-modified in SQLite, we know it existed before; we'll iterate over state DB
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
         """
-        logger.info(f"[DELETE] Removing file from index: {abspath}")
+        logger.info(f"[DELETE] Removing file from index: {relpath}")
 
         # Query Qdrant for all points with payload.source == abspath
         # filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
-        filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=str(abspath)))])
+        filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=str(relpath)))])
 
         # Retrieve IDs matching that filter
         hits = self.qdrant.search(limit=1000, query_filter=filter_)
@@ -123,10 +130,10 @@ class DocumentIndexer:
         ids_to_delete = [hit.id for hit in hits]
         if ids_to_delete:
             self.qdrant.delete(ids_to_delete)
-            logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {abspath}")
+            logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors for {relpath}")
 
         # Remove from state DB
-        delete_stored_file(abspath)
+        delete_stored_file(relpath)
 
     def initial_scan(self):
         """
@@ -143,23 +150,19 @@ class DocumentIndexer:
 
         # 2. For each file on disk, check timestamp vs. state DB
         for file_path in disk_files:
-            stored = get_stored_timestamp(file_path)
+            relpath = file_path.relative_to(config.DOCS_PATH)
+            stored = get_stored_timestamp(relpath)
             modified = os.path.getmtime(str(file_path))
             if stored is None or stored != modified:
                 # New or changed
                 self.process_file(file_path)
 
         # 3. For each file in state DB, if not on disk anymore, delete from Qdrant
-        conn = sqlite3.connect(config.STATE_DB_PATH)
-        c = conn.cursor()
-        c.execute("SELECT path FROM files")
-        rows = c.fetchall()
-        conn.close()
-
-        for (stored_path,) in rows:
-            if not Path(stored_path).exists():
+        for relpath in list_stored_files():
+            abspath = config.DOCS_PATH / relpath
+            if not abspath.exists():
                 # Remove from Qdrant
-                self.remove_file(stored_path)
+                self.remove_file(relpath)
 
     def on_created_or_modified(self, event: FileSystemEvent):
         if event.is_directory:
