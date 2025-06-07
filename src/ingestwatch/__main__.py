@@ -3,7 +3,7 @@ import sys
 import nltk
 import torch
 
-from .ingest_watch import initialize_state_db
+from .index_database import initialize_state_db
 from .config import config
 from . import logger
 from .frontend import ChatDocFontend

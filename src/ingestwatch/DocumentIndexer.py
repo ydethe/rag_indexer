@@ -1,28 +1,22 @@
-# === File Processor ===
-#!/usr/bin/env python3
-import hashlib
 import os
 import time
 import threading
 from pathlib import Path
-import uuid
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
 from sentence_transformers import SentenceTransformer
 from qdrant_client.models import (
-    PointStruct,
     Filter,
     FieldCondition,
     MatchValue,
 )
 
+from .documents.Document import Document
 from . import logger
-from .ingest_watch import (
-    chunk_text,
+from .index_database import (
     delete_stored_file,
-    extract_text,
     get_stored_timestamp,
     rename_stored_file,
     set_stored_timestamp,
@@ -30,6 +24,23 @@ from .ingest_watch import (
 )
 from .config import config
 from .QdrantIndexer import QdrantIndexer
+
+
+def extract_text(abspath: Path) -> Document:
+    ext = abspath.suffix.lower()
+    if ext == ".pdf":
+        from .documents.PdfDocument import PdfDocument as DocumentProcessor
+    elif ext in (".xls", ".xslx", ".xlsm"):
+        from .documents.XlsDocument import XlsDocument as DocumentProcessor
+    elif ext in (".doc", ".docx", ".docm"):
+        from .documents.DocDocument import DocDocument as DocumentProcessor
+    elif ext in (".txt", ".md"):
+        from .documents.MarkdownDocument import MarkdownDocument as DocumentProcessor
+    else:
+        return None
+
+    doc = DocumentProcessor(abspath)
+    return doc
 
 
 class DocumentIndexer:
@@ -72,46 +83,15 @@ class DocumentIndexer:
                 return
 
             logger.info(f"[INDEX] Processing changed file: '{filepath}'")
-            text, file_metadata = extract_text(filepath)
-            if not text:
-                logger.warning(f"No text extracted; skipping: '{filepath}'")
-                return
-
-            chunks = chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
-            batch_size = 32
-            embeddings = []
-            logger.info(f"Embedding {len(chunks)} chunks in {len(chunks)// batch_size+1} batches")
-            for nb_batch in range(0, len(chunks), batch_size):
-                batch = chunks[nb_batch : nb_batch + batch_size]
-                embeddings.extend(
-                    self.model.encode(batch, device="cpu", show_progress_bar=True).tolist()
-                )
-            # chunks=['']
-            # embeddings = [[0. for _ in range(self.vector_size)] for _ in chunks]
-
-            points: list[PointStruct] = []
-            # Use MD5 of path + chunk index as unique point ID
-            logger.info(f"Building {len(chunks)} embeddings for qdrant")
-            for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
-                pid = str(
-                    uuid.UUID(
-                        int=int(hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest(), 16)
-                    )
-                )
-                payload = {
-                    "source": str(relpath),
-                    "chunk_index": idx,
-                    "text": chunk,
-                    "ocr_used": file_metadata.get("ocr_used", False),
-                }
-                points.append(PointStruct(id=pid, vector=emb, payload=payload))
+            doc = extract_text(filepath)
+            chunks, embeddings, file_metadata = doc.process()
 
             # Upsert into Qdrant
-            self.qdrant.upsert(points)
+            self.qdrant.record_embeddings(chunks, embeddings, file_metadata)
 
             # Update state DB
             set_stored_timestamp(relpath, stat)
-            logger.info(f"[INDEX] Upserted {len(points)} vectors")
+            logger.info(f"[INDEX] Upserted {len(chunks)} vectors")
 
         except Exception as e:
             logger.error(f"Error processing '{filepath}': {e}")

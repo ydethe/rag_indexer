@@ -1,4 +1,6 @@
 from typing import Optional, List, Sequence, Union
+import hashlib
+import uuid
 
 from qdrant_client.conversions import common_types as types
 from qdrant_client import QdrantClient
@@ -70,3 +72,28 @@ class QdrantIndexer:
         if ids:
             pil = PointIdsList(points=ids)
             self.__client.delete(collection_name=config.COLLECTION_NAME, points_selector=pil)
+
+    def record_embeddings(
+        self, chunks: List[str], embeddings: List[List[float]], file_metadata: dict
+    ):
+        filepath = file_metadata["abspath"]
+        relpath = filepath.relative_to(config.DOCS_PATH)
+
+        points: list[PointStruct] = []
+        # Use MD5 of path + chunk index as unique point ID
+        for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
+            pid = str(
+                uuid.UUID(
+                    int=int(hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest(), 16)
+                )
+            )
+            payload = {
+                "source": str(relpath),
+                "chunk_index": idx,
+                "text": chunk,
+                "ocr_used": file_metadata.get("ocr_used", False),
+            }
+            points.append(PointStruct(id=pid, vector=emb, payload=payload))
+
+        # Upsert into Qdrant
+        self.qdrant.upsert(points)
