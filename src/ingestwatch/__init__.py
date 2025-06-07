@@ -24,12 +24,12 @@ To run tests, just run:
 
 """
 
-
+import sys
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from rich.logging import RichHandler
+from pythonjsonlogger import jsonlogger
 
 from .config import config
 
@@ -38,11 +38,18 @@ from .config import config
 logger = logging.getLogger("ingestwatch_logger")
 logger.setLevel(config.LOGLEVEL.upper())
 
+# Create stream handler for stdout
+logHandler = logging.StreamHandler(sys.stdout)
+
+# JSON formatter
+formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s")
+
+logHandler.setFormatter(formatter)
+logger.addHandler(logHandler)
+
 log_pth = Path("logs")
 if not log_pth.exists():
     log_pth.mkdir(exist_ok=True)
 file_handler = RotatingFileHandler("logs/ingestwatch.log", maxBytes=10e6, backupCount=5)
-term_handler = RichHandler(rich_tracebacks=False)
 
 logger.addHandler(file_handler)
-logger.addHandler(term_handler)

@@ -2,8 +2,8 @@ services:
   qdrant:
     image: qdrant/qdrant:latest
     restart: unless-stopped
-    ports:
-      - "6333:6333"    # Qdrant API
+    # ports:
+    #   - "6333:6333"    # Qdrant API
     # environment:
     #   - QDRANT__SERVICE__API_KEY=$QDRANT__SERVICE__API_KEY
     #   - QDRANT__SERVICE__READ_ONLY_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
@@ -25,45 +25,45 @@ services:
     #   - "homepage.href=https://qdrant.$HOST/dashboard"
     #   - "homepage.description=$HOME_DESCRIPTION"
 
-  # ingestion:
-  #   build: .
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - qdrant
-  #   volumes:
-  #     - /home/yann/johncloud_data/sftpgo/data/ydethe/Documents:/docs:ro
-  #     - /home/yann/repos/rag_indexer/.root:/code
-  #   environment:
-  #     - LOGLEVEL=$LOGLEVEL
-  #     - QDRANT_HOST=$QDRANT_HOST
-  #     - QDRANT_PORT=$QDRANT_PORT
-  #     - QDRANT_QUERY_LIMIT=$QDRANT_QUERY_LIMIT
-  #     - OPENAI_API_KEY=$OPENAI_API_KEY
-  #     - DOCS_PATH=$DOCS_PATH
-  #     - STATE_DB_PATH=$STATE_DB_PATH
-  #     - COLLECTION_NAME=$COLLECTION_NAME
-  #     - DAV_ROOT=$DAV_ROOT
-  #     - EMBEDDING_MODEL=$EMBEDDING_MODEL
-  #     - EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
-  #     - OPEN_MODEL_PREF=$OPEN_MODEL_PREF
-  #     - CHUNK_SIZE=$CHUNK_SIZE
-  #     - CHUNK_OVERLAP=$CHUNK_OVERLAP
-  #     - OCR_LANG=$OCR_LANG
-  #   labels:
-  #     - "traefik.enable=true"
+  ingestion:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - qdrant
+    volumes:
+      - /home/yann/johncloud_data/sftpgo/data/ydethe/Documents:/docs:ro
+      - /home/yann/repos/rag_indexer/.root:/code
+    environment:
+      - LOGLEVEL=$LOGLEVEL
+      - QDRANT_HOST=$QDRANT_HOST
+      - QDRANT_PORT=$QDRANT_PORT
+      - QDRANT_QUERY_LIMIT=$QDRANT_QUERY_LIMIT
+      - OPENAI_API_KEY=$OPENAI_API_KEY
+      - DOCS_PATH=$DOCS_PATH
+      - STATE_DB_PATH=$STATE_DB_PATH
+      - COLLECTION_NAME=$COLLECTION_NAME
+      - DAV_ROOT=$DAV_ROOT
+      - EMBEDDING_MODEL=$EMBEDDING_MODEL
+      - EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
+      - OPEN_MODEL_PREF=$OPEN_MODEL_PREF
+      - CHUNK_SIZE=$CHUNK_SIZE
+      - CHUNK_OVERLAP=$CHUNK_OVERLAP
+      - OCR_LANG=$OCR_LANG
+    labels:
+      - "traefik.enable=true"
 
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.service=$COMPOSE_PROJECT_NAME"
-  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=7860"
-  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.middlewares=forward-auth-verify"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.service=$COMPOSE_PROJECT_NAME"
+      - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=7860"
+      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.middlewares=forward-auth-verify"
 
-  #     - "homepage.group=$HOME_GROUP"
-  #     - "homepage.name=$HOME_NAME"
-  #     - "homepage.icon=$HOME_ICON"
-  #     - "homepage.href=https://$HOST"
-  #     - "homepage.description=$HOME_DESCRIPTION"
+      - "homepage.group=$HOME_GROUP"
+      - "homepage.name=$HOME_NAME"
+      - "homepage.icon=$HOME_ICON"
+      - "homepage.href=https://$HOST"
+      - "homepage.description=$HOME_DESCRIPTION"
 
 networks:
   default:

@@ -97,6 +97,7 @@ def list_stored_files(absolute: bool = False) -> list[Path]:
 # === Text extraction per filetype ===
 def extract_text_from_pdf(path: Path) -> str:
     text_chunks = []
+    len_text = 0
     reader = PdfReader(path)
     nb_pages = len(reader.pages)
     try:
@@ -104,11 +105,12 @@ def extract_text_from_pdf(path: Path) -> str:
         for page in reader.pages:
             txt = page.extract_text() or ""
             text_chunks.append(txt)
+            len_text += len(txt)
 
         full_text = "\n".join(text_chunks).strip()
 
         # If nearly empty, fallback to OCR
-        if len(full_text) < 10 * nb_pages:
+        if len_text < 10 * nb_pages:
             logger.info("PDF text is too short; falling back to OCR")
             return ocr_pdf(path, nb_pages), {"ocr_used": True}
 
@@ -124,9 +126,8 @@ def ocr_pdf(path: Path, nb_pages: int) -> str:
     logger.info("OCR")
     try:
         # Convert each page to an image
-        logger.info("pdf to images")
         for k_page in range(1, 1 + nb_pages):
-            images = convert_from_path(path, first_page=k_page, last_page=k_page)
+            images = convert_from_path(path, first_page=k_page, last_page=k_page, dpi=300)
             for img in images:
                 txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
                 text.append(txt)

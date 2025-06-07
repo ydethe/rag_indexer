@@ -12,7 +12,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 RUN python3 -m venv venv --system-site-packages && \
-    ./venv/bin/python -m pip install --no-cache-dir -U torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
+    ./venv/bin/python -m pip install --no-cache-dir -U torch --index-url https://download.pytorch.org/whl/cpu && \
     ./venv/bin/python -m pip install --no-cache-dir -U -r requirements.txt && \
     find /app/venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
 
