@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from nltk.tokenize import sent_tokenize
+from sentence_transformers import SentenceTransformer
 
 from .. import logger
 from ..config import config
@@ -44,7 +45,9 @@ class Document(ABC):
             chunks.append(current_chunk)
         return chunks
 
-    def __get_embeddings(self, text: str) -> Tuple[List[str], List[List[float]]]:
+    def __get_embeddings(
+        self, text: str, embedding_model: SentenceTransformer
+    ) -> Tuple[List[str], List[List[float]]]:
         chunks = self.__get_chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
         batch_size = 32
         embeddings = []
@@ -52,18 +55,20 @@ class Document(ABC):
         for nb_batch in range(0, len(chunks), batch_size):
             batch = chunks[nb_batch : nb_batch + batch_size]
             embeddings.extend(
-                self.model.encode(batch, device="cpu", show_progress_bar=True).tolist()
+                embedding_model.encode(batch, device="cpu", show_progress_bar=True).tolist()
             )
         return chunks, embeddings
 
-    def process(self) -> Tuple[List[str], List[List[float]], dict]:
+    def process(
+        self, embedding_model: SentenceTransformer
+    ) -> Tuple[List[str], List[List[float]], dict]:
         text, file_metadata = self.get_raw_text()
+        file_metadata["abspath"] = self.get_abs_path()
+
         if not text:
             logger.warning(f"No text extracted; skipping: '{self.get_abs_path()}'")
-            return
+            return [], [], file_metadata
 
-        chunks, embeddings = self.__get_embeddings(text)
-
-        file_metadata["abspath"] = self.get_abs_path()
+        chunks, embeddings = self.__get_embeddings(text, embedding_model)
 
         return chunks, embeddings, file_metadata

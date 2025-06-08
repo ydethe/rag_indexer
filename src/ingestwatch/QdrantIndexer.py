@@ -93,4 +93,4 @@ class QdrantIndexer:
             points.append(PointStruct(id=pid, vector=emb, payload=payload))
 
         # Upsert into Qdrant
-        self.qdrant.upsert(points)
+        self.upsert(points)

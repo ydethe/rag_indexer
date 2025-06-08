@@ -2,6 +2,7 @@ import os
 import time
 import threading
 from pathlib import Path
+from typing import List, Tuple
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
@@ -14,7 +15,6 @@ from qdrant_client.models import (
 )
 
 from .documents.DocumentFactory import DocumentFactory
-from .documents.Document import Document
 from . import logger
 from .index_database import (
     delete_stored_file,
@@ -25,12 +25,6 @@ from .index_database import (
 )
 from .config import config
 from .QdrantIndexer import QdrantIndexer
-
-
-def extract_text(abspath: Path) -> Document:
-    doc_factory = DocumentFactory()
-    doc = doc_factory.createDocument(abspath)
-    return doc
 
 
 class DocumentIndexer:
@@ -44,6 +38,8 @@ class DocumentIndexer:
             model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
         )
         self.vector_size = self.model.get_sentence_embedding_dimension()
+        doc_factory = DocumentFactory()
+        doc_factory.set_embedding_model(self.model)
 
         # Initialize Qdrant
         self.qdrant = QdrantIndexer(vector_size=self.vector_size)
@@ -55,31 +51,32 @@ class DocumentIndexer:
         # Lock around state & indexing operations
         self.lock = threading.Lock()
 
+    def extract_text(self, abspath: Path) -> Tuple[List[str], List[List[float]], dict]:
+        doc_factory = DocumentFactory()
+        chunks, embeddings, file_metadata = doc_factory.processDocument(abspath)
+        return chunks, embeddings, file_metadata
+
     def process_file(self, filepath: Path):
         """
         Extract text, chunk, embed, and upsert into Qdrant.
         """
-        try:
-            relpath = filepath.relative_to(config.DOCS_PATH)
-            stat = os.path.getmtime(filepath)
-            stored = get_stored_timestamp(relpath)
-            if stored is not None and stored == stat:
-                # No change
-                return
+        relpath = filepath.relative_to(config.DOCS_PATH)
+        stat = os.path.getmtime(filepath)
+        stored = get_stored_timestamp(relpath)
+        if stored is not None and stored == stat:
+            # No change
+            return
 
-            logger.info(f"[INDEX] Processing changed file: '{filepath}'")
-            doc = extract_text(filepath)
-            chunks, embeddings, file_metadata = doc.process()
+        logger.info(72 * "=")
+        logger.info(f"[INDEX] Processing changed file: '{filepath}'")
+        chunks, embeddings, file_metadata = self.extract_text(filepath)
 
-            # Upsert into Qdrant
-            self.qdrant.record_embeddings(chunks, embeddings, file_metadata)
+        # Upsert into Qdrant
+        self.qdrant.record_embeddings(chunks, embeddings, file_metadata)
 
-            # Update state DB
-            set_stored_timestamp(relpath, stat)
-            logger.info(f"[INDEX] Upserted {len(chunks)} vectors")
-
-        except Exception as e:
-            logger.error(f"Error processing '{filepath}': {e}")
+        # Update state DB
+        set_stored_timestamp(relpath, stat)
+        logger.info(f"[INDEX] Upserted {len(chunks)} vectors")
 
     def rename_file(self, src_rel_path, dest_rel_path):
         rename_stored_file(src_rel_path, dest_rel_path)
