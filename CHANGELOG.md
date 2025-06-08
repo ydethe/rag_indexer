@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed docker compose stack ([ed11e54](https://github.com/ydethe/rag_indexer/commit/ed11e54f81e6967b17efaf111d3b8a2b1d0275a7) by Yann de The).
 - Fixing pipeline ([00107b2](https://github.com/ydethe/rag_indexer/commit/00107b29eaad9b53df18e2037222e1a938494966) by Yann de The).
 
 ### Removed
