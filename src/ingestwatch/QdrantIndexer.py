@@ -82,11 +82,8 @@ class QdrantIndexer:
         points: list[PointStruct] = []
         # Use MD5 of path + chunk index as unique point ID
         for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
-            pid = str(
-                uuid.UUID(
-                    int=int(hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest(), 16)
-                )
-            )
+            file_hash = hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest()
+            pid = str(uuid.UUID(int=int(file_hash, 16)))
             payload = {
                 "source": str(relpath),
                 "chunk_index": idx,

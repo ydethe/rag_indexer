@@ -13,6 +13,7 @@ from qdrant_client.models import (
     MatchValue,
 )
 
+from .documents.DocumentFactory import DocumentFactory
 from .documents.Document import Document
 from . import logger
 from .index_database import (
@@ -27,29 +28,14 @@ from .QdrantIndexer import QdrantIndexer
 
 
 def extract_text(abspath: Path) -> Document:
-    ext = abspath.suffix.lower()
-    if ext == ".pdf":
-        from .documents.PdfDocument import PdfDocument as DocumentProcessor
-    elif ext in (".xls", ".xslx", ".xlsm"):
-        from .documents.XlsDocument import XlsDocument as DocumentProcessor
-    elif ext in (".doc", ".docx", ".docm"):
-        from .documents.DocDocument import DocDocument as DocumentProcessor
-    elif ext in (".txt", ".md"):
-        from .documents.MarkdownDocument import MarkdownDocument as DocumentProcessor
-    else:
-        return None
-
-    doc = DocumentProcessor(abspath)
+    doc_factory = DocumentFactory()
+    doc = doc_factory.createDocument(abspath)
     return doc
 
 
 class DocumentIndexer:
     def __init__(self):
         # Load embedding model
-        # self.model = SentenceTransformer(
-        #     config.EMBEDDING_MODEL,
-        #     trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
-        # )
         self.model = SentenceTransformer(
             config.EMBEDDING_MODEL,
             trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
@@ -72,7 +58,6 @@ class DocumentIndexer:
     def process_file(self, filepath: Path):
         """
         Extract text, chunk, embed, and upsert into Qdrant.
-        The file ID in Qdrant will be a SHA1 of its absolute path.
         """
         try:
             relpath = filepath.relative_to(config.DOCS_PATH)
@@ -193,7 +178,7 @@ class DocumentIndexer:
         event_handler.on_deleted = self.on_deleted
 
         self.__observer = Observer()
-        self.__observer.schedule(event_handler, str(self.root), recursive=True)
+        self.__observer.schedule(event_handler, path=str(self.root), recursive=True)
         self.__observer.start()
 
         logger.info(f"Started file watcher on: '{config.DOCS_PATH}'")

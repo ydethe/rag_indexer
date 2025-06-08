@@ -1,1 +1,1 @@
-- [src/ingestwatch/DocumentIndexer.py#L176](src/ingestwatch/DocumentIndexer.py#L176): Implement folder and file renaming
+- [src/ingestwatch/DocumentIndexer.py#L161](src/ingestwatch/DocumentIndexer.py#L161): Implement folder and file renaming
