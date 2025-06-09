@@ -13,6 +13,7 @@ from qdrant_client.models import (
 
 from . import logger
 from .config import config
+from .models import ChunkType, EmbeddingType
 
 
 # === Qdrant helper ===
@@ -74,7 +75,7 @@ class QdrantIndexer:
             self.__client.delete(collection_name=config.COLLECTION_NAME, points_selector=pil)
 
     def record_embeddings(
-        self, chunks: List[str], embeddings: List[List[float]], file_metadata: dict
+        self, chunks: List[ChunkType], embeddings: List[EmbeddingType], file_metadata: dict
     ):
         filepath = file_metadata["abspath"]
         relpath = filepath.relative_to(config.DOCS_PATH)

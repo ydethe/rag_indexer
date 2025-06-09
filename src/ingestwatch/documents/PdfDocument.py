@@ -1,61 +1,44 @@
 from pathlib import Path
-import time
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
 import pytesseract
 from pdf2image import convert_from_path
 from PyPDF2 import PdfReader
+from tqdm import tqdm
 
 from .. import logger
 from .Document import Document
 from ..config import config
 
 
-def ocr_pdf(path: Path, nb_pages: int) -> List[str]:
-    text = ""
-    logger.info("OCR")
+def ocr_pdf(path: Path, k_page: int) -> List[str]:
     relpath = path.relative_to(config.DOCS_PATH)
     ocr_dir = config.STATE_DB_PATH.parent / "cache" / relpath.parent / (path.parts[-1] + ".ocr")
     ocr_dir.mkdir(parents=True, exist_ok=True)
 
-    time_img = 0
-    time_ocr = 0
-    # Convert each page to an image
-    for k_page in range(1, 1 + nb_pages):
-        ocr_txt = ocr_dir / f"page{k_page:05}.cache"
-        if ocr_txt.exists():
-            with open(ocr_txt, "r") as f:
-                txt = f.read()
+    # Convert the page to an image
+    ocr_txt = ocr_dir / f"page{k_page:05}.cache"
+    if ocr_txt.exists():
+        with open(ocr_txt, "r") as f:
+            txt = f.read()
 
-        else:
-            t0 = time.time()
-            img = convert_from_path(path, first_page=k_page, last_page=k_page, dpi=300)[0]
-            time_img += time.time() - t0
+    else:
+        img = convert_from_path(path, first_page=k_page, last_page=k_page, dpi=300)[0]
 
-            t0 = time.time()
-            try:
-                txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
-            except Exception as e:
-                logger.error(f"OCR failed : {e}")
-                txt = ""
-            time_ocr += time.time() - t0
-            with open(ocr_txt, "w") as f:
-                f.write(txt)
+        try:
+            txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
+        except Exception as e:
+            logger.error(f"OCR failed : {e}")
+            txt = ""
+        with open(ocr_txt, "w") as f:
+            f.write(txt)
 
-        text = text + "\n\n" + txt
-
-    if time_img < 0.1:
-        logger.info(f"Time spent in image generation: {time_img} s")
-        logger.info(f"Time spent in OCR: {time_ocr} s")
-
-    return text
+    return txt
 
 
 class PdfDocument(Document):
-    def get_raw_text(self) -> Tuple[str, dict]:
+    def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
         path = self.get_abs_path()
-        text_chunks = []
-        len_text = 0
         try:
             reader = PdfReader(path)
         except Exception:
@@ -63,21 +46,17 @@ class PdfDocument(Document):
             return None, {"ocr_used": False}
 
         nb_pages = len(reader.pages)
+        file_metadata = {"ocr_used": False}
         logger.info(f"Reading {nb_pages} pages pdf file")
-        for page in reader.pages:
+        for k_page, page in enumerate(tqdm(reader.pages)):
             try:
                 txt = page.extract_text() or ""
             except Exception as e:
                 logger.error(f"While extracting text: {e}")
                 txt = ""
-            text_chunks.append(txt)
-            len_text += len(txt)
 
-        full_text = "\n".join(text_chunks).strip()
+            if len(txt) < 10:
+                file_metadata["ocr_used"] = True
+                txt = ocr_pdf(path, k_page + 1)
 
-        # If nearly empty, fallback to OCR
-        if len_text < 10 * nb_pages:
-            logger.info("PDF text is too short; falling back to OCR")
-            return ocr_pdf(path, nb_pages), {"ocr_used": True}
-
-        return full_text, {"ocr_used": False}
+            yield txt, file_metadata

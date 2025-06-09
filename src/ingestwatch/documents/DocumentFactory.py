@@ -1,8 +1,9 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 from solus import Singleton
 from sentence_transformers import SentenceTransformer
 
+from ..models import ChunkType, EmbeddingType
 from .Document import Document
 from .XlsDocument import XlsDocument
 from .PdfDocument import PdfDocument
@@ -24,12 +25,14 @@ class DocumentFactory(Singleton):
     def set_embedding_model(self, embedding_model: SentenceTransformer):
         self.__embedding_model = embedding_model
 
-    def processDocument(self, abspath: Path) -> Tuple[List[str], List[List[float]], dict]:
+    def processDocument(
+        self, abspath: Path
+    ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
         ext = abspath.suffix
         cls = self.getBuild(ext)
         doc: Document = cls(abspath)
-        chunks, embeddings, file_metadata = doc.process(self.__embedding_model)
-        return chunks, embeddings, file_metadata
+        for chunks, embeddings, file_metadata in doc.process(self.__embedding_model):
+            yield chunks, embeddings, file_metadata
 
 
 DocumentFactory().register(".doc", DocDocument)

@@ -2,7 +2,7 @@ import os
 import time
 import threading
 from pathlib import Path
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
@@ -25,6 +25,7 @@ from .index_database import (
 )
 from .config import config
 from .QdrantIndexer import QdrantIndexer
+from .models import ChunkType, EmbeddingType
 
 
 class DocumentIndexer:
@@ -51,10 +52,12 @@ class DocumentIndexer:
         # Lock around state & indexing operations
         self.lock = threading.Lock()
 
-    def extract_text(self, abspath: Path) -> Tuple[List[str], List[List[float]], dict]:
+    def extract_text(
+        self, abspath: Path
+    ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
         doc_factory = DocumentFactory()
-        chunks, embeddings, file_metadata = doc_factory.processDocument(abspath)
-        return chunks, embeddings, file_metadata
+        for chunks, embeddings, file_metadata in doc_factory.processDocument(abspath):
+            yield chunks, embeddings, file_metadata
 
     def process_file(self, filepath: Path):
         """
@@ -69,10 +72,9 @@ class DocumentIndexer:
 
         logger.info(72 * "=")
         logger.info(f"[INDEX] Processing changed file: '{filepath}'")
-        chunks, embeddings, file_metadata = self.extract_text(filepath)
-
-        # Upsert into Qdrant
-        self.qdrant.record_embeddings(chunks, embeddings, file_metadata)
+        for chunks, embeddings, file_metadata in self.extract_text(filepath):
+            # Upsert into Qdrant
+            self.qdrant.record_embeddings(chunks, embeddings, file_metadata)
 
         # Update state DB
         set_stored_timestamp(relpath, stat)

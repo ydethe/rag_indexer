@@ -6,6 +6,8 @@ build-backend = "pdm.backend"
 name = "ingestwatch"
 dynamic = ["version"]
 requires-python = ">=3.11"
+readme = "README.md"
+description = ""
 dependencies = [
     "gradio>=5.33.0",
     "markdown>=3.8",
@@ -24,6 +26,7 @@ dependencies = [
     "qdrant-client>=1.14.2",
     "sentence-transformers>=4.1.0",
     "solus>=1.2.2",
+    "tqdm>=4.67.1",
     # "torch",
     # "torchaudio",
     # "torchvision",
