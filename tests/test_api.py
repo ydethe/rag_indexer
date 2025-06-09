@@ -59,10 +59,19 @@ class TestIngestWatch(unittest.TestCase):
 
         self.assertGreater(F.cosine_similarity(fra_emb, fra2_emb), 0, 6)
 
+    def test_pdf_conv(self):
+        from doctr.io import DocumentFile
+
+        doc = DocumentFile.from_pdf(
+            "/home/yann/johncloud_data/sftpgo/data/ydethe/Documents/FM/Tuileur Lausanne 1786.pdf"
+        )
+        print(doc)
+
 
 if __name__ == "__main__":
     a = TestIngestWatch()
 
     # a.test_config()
-    a.test_main()
+    # a.test_main()
     # a.test_embeding()
+    a.test_pdf_conv()

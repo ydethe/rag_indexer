@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added a cache for OCR ([3d3f258](https://github.com/ydethe/rag_indexer/commit/3d3f258df0cbb25884e4359fb464bf159c226569) by Yann de The).
 - Added OCR cache ([8dc4205](https://github.com/ydethe/rag_indexer/commit/8dc42053c8f3363d779c84b6c648386b2c6cc273) by Yann de The).
 - Added unit test to check embedding relevance ([d9e072f](https://github.com/ydethe/rag_indexer/commit/d9e072ffc96e832b2ca336a983f2ee1127f5460a) by Yann de The).
 - Added progress bars for file analysis. pdf tested OK ([be49834](https://github.com/ydethe/rag_indexer/commit/be49834155c7b30d3ad5a4abfd08174d3cd229fe) by Yann de The).

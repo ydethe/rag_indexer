@@ -14,7 +14,8 @@ from ..config import config
 def ocr_pdf(path: Path, nb_pages: int) -> List[str]:
     text = ""
     logger.info("OCR")
-    ocr_dir = path.parent / (path.parts[-1] + ".ocr")
+    relpath = path.relative_to(config.DOCS_PATH)
+    ocr_dir = config.STATE_DB_PATH.parent / relpath.parent / (path.parts[-1] + ".ocr")
     ocr_dir.mkdir(parents=True, exist_ok=True)
 
     time_img = 0

@@ -6,7 +6,8 @@ RUN apt update && apt install -y \
     tesseract-ocr-eng \
     tesseract-ocr-fra \
     poppler-utils \
-    libgl1
+    libgl1 \
+    fonts-freefont-ttf
 
 WORKDIR /app
 
