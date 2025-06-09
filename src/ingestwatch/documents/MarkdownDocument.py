@@ -1,9 +1,9 @@
 from typing import Iterable, Tuple
 
-from .Document import Document
+from .ADocument import ADocument
 
 
-class MarkdownDocument(Document):
+class MarkdownDocument(ADocument):
     def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
         with open(self.get_abs_path(), "r", encoding="utf-8", errors="ignore") as f:
             yield f.read(), {"ocr_used": False}

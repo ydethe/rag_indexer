@@ -10,7 +10,7 @@ from ..config import config
 from ..models import ChunkType, EmbeddingType
 
 
-class Document(ABC):
+class ADocument(ABC):
     def __init__(self, abspath: Path):
         self.__abspath = abspath
 

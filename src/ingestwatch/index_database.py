@@ -7,8 +7,11 @@ from . import logger
 from .config import config
 
 
-# === SQLite state DB helpers ===
 def initialize_state_db():
+    """
+    Initialize the sqlite database
+
+    """
     os.makedirs(os.path.dirname(config.STATE_DB_PATH), exist_ok=True)
 
     logger.info(f"Using sqlite database '{config.STATE_DB_PATH}'")
@@ -28,6 +31,16 @@ def initialize_state_db():
 
 
 def get_stored_timestamp(relpath: Path) -> Optional[float]:
+    """
+    Get the stored timestamp for the given path
+
+    Args:
+        relpath: Path to a file that has already been processed
+
+    Returns:
+        The timestamp of last processing if found. None otherwise
+
+    """
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
     c.execute("SELECT last_modified FROM files WHERE path = ?", (str(relpath),))
@@ -37,6 +50,14 @@ def get_stored_timestamp(relpath: Path) -> Optional[float]:
 
 
 def set_stored_timestamp(relpath: Path, ts: float):
+    """
+    Stores the processing timestamp for the given path
+
+    Args:
+        relpath: Path to a file that has already been processed
+        ts: The timestamp of last processing
+
+    """
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
     c.execute("REPLACE INTO files (path, last_modified) VALUES (?, ?)", (str(relpath), ts))
@@ -45,6 +66,13 @@ def set_stored_timestamp(relpath: Path, ts: float):
 
 
 def delete_stored_file(relpath: Path):
+    """
+    Delete the given path
+
+    Args:
+        relpath: Path to a file that has already been processed
+
+    """
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
     c.execute("DELETE FROM files WHERE path = ?", (str(relpath),))
@@ -52,23 +80,17 @@ def delete_stored_file(relpath: Path):
     conn.close()
 
 
-def rename_folder(srcpath: Path, destpath: Path):
-    conn = sqlite3.connect(config.STATE_DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE files SET path=? WHERE path LIKE ?", (str(destpath), f"%{srcpath}"))
-    conn.commit()
-    conn.close()
-
-
-def rename_stored_file(srcpath: Path, destpath: Path):
-    conn = sqlite3.connect(config.STATE_DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE files SET path=? WHERE path=?", (str(destpath), str(srcpath)))
-    conn.commit()
-    conn.close()
-
-
 def list_stored_files(absolute: bool = False) -> list[Path]:
+    """
+    List all paths stored in the database
+
+    Args:
+        absolute: True to return absolute paths
+
+    Returns:
+        The list of all paths stored in the database
+
+    """
     conn = sqlite3.connect(config.STATE_DB_PATH)
     c = conn.cursor()
     c.execute("SELECT path FROM files")

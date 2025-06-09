@@ -18,6 +18,13 @@ from .models import ChunkType, EmbeddingType
 
 # === Qdrant helper ===
 class QdrantIndexer:
+    """Qdrant client that handles database operations based on the configuration
+
+    Args:
+        vector_size: Size of the embedding vectors
+
+    """
+
     def __init__(self, vector_size: int):
         self.__client = QdrantClient(
             host=config.QDRANT_HOST,
@@ -30,16 +37,32 @@ class QdrantIndexer:
 
     def search(
         self,
-        query_vector: Union[
-            Sequence[float],
-            tuple[str, list[float]],
-            types.NamedVector,
-            types.NamedSparseVector,
-            types.NumpyArray,
+        query_vector: Optional[
+            Union[
+                Sequence[float],
+                tuple[str, list[float]],
+                types.NamedVector,
+                types.NamedSparseVector,
+                types.NumpyArray,
+            ]
         ] = None,
-        limit: int = 10,
+        limit: Optional[int] = 10,
         query_filter: Optional[types.Filter] = None,
     ):
+        """Search a vector in the database
+        See https://python-client.qdrant.tech/quickstart#Points for more details
+
+        Args:
+            query_vector: Search for vectors closest to this. If None, allows listing ids
+            limit: How many results return
+            query_filter:
+                - Exclude vectors which doesn't fit given conditions.
+                - If `None` - search among all vectors
+
+        Returns:
+            List of found close points with similarity scores.
+
+        """
         if query_vector is None:
             query_vect = [0.0] * self.vector_size  # dummy vector; we only want IDs
         else:
@@ -54,6 +77,7 @@ class QdrantIndexer:
         return hits
 
     def create_collection_if_missing(self):
+        """Creates the collection provided in the COLLECTION_NAME environment variable, if not already created"""
         existing = [c.name for c in self.__client.get_collections().collections]
         if config.COLLECTION_NAME not in existing:
             self.__client.recreate_collection(
@@ -66,10 +90,25 @@ class QdrantIndexer:
             )
 
     def upsert(self, points: List[PointStruct]):
+        """
+        Update or insert a new point into the collection.
+
+        If point with given ID already exists - it will be overwritten.
+
+        Args:
+            points (Point): Batch or list of points to insert
+
+        """
         if points:
             self.__client.upsert(collection_name=config.COLLECTION_NAME, points=points)
 
     def delete(self, ids: List[str]):
+        """Deletes selected points from collection
+
+        Args:
+            ids: Selects points based on list of IDs
+
+        """
         if ids:
             pil = PointIdsList(points=ids)
             self.__client.delete(collection_name=config.COLLECTION_NAME, points_selector=pil)
@@ -77,6 +116,15 @@ class QdrantIndexer:
     def record_embeddings(
         self, chunks: List[ChunkType], embeddings: List[EmbeddingType], file_metadata: dict
     ):
+        """
+        Update or insert a new chunk into the collection.
+
+        Args:
+            chunks: List of chunks to record
+            embeddings: The corresponding list of vectors to record
+            file_metadata: Original file's information
+
+        """
         filepath = file_metadata["abspath"]
         relpath = filepath.relative_to(config.DOCS_PATH)
 

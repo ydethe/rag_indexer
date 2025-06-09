@@ -19,7 +19,6 @@ from . import logger
 from .index_database import (
     delete_stored_file,
     get_stored_timestamp,
-    rename_stored_file,
     set_stored_timestamp,
     list_stored_files,
 )
@@ -78,10 +77,7 @@ class DocumentIndexer:
 
         # Update state DB
         set_stored_timestamp(relpath, stat)
-        logger.info(f"[INDEX] Upserted {len(chunks)} vectors")
-
-    def rename_file(self, src_rel_path, dest_rel_path):
-        rename_stored_file(src_rel_path, dest_rel_path)
+        logger.info("[INDEX] Upserted vectors")
 
     def remove_file(self, relpath: Path):
         """

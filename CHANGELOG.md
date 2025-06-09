@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added page progress ([fd78e72](https://github.com/ydethe/rag_indexer/commit/fd78e7266a6019c9934b22e044b614420da79e9c) by Yann de The).
 - Added new_ocr for later integration ([c56d9d7](https://github.com/ydethe/rag_indexer/commit/c56d9d7bd1b2784733176d15be352b4bcc1c22f3) by Yann de The).
 - Added a cache for OCR ([c4ce7d9](https://github.com/ydethe/rag_indexer/commit/c4ce7d92e45fb17da590060795df5e44c3d8b59e) by Yann de The).
 - Added OCR cache ([8dc4205](https://github.com/ydethe/rag_indexer/commit/8dc42053c8f3363d779c84b6c648386b2c6cc273) by Yann de The).

@@ -26,9 +26,9 @@ class TestIngestWatch(unittest.TestCase):
         # Case where the sentences are similar
         fra = "Aujourd'hui, le temps est beau et il pleuvra demain. "
         test_fra = ""
-        while len(test_fra) < 400:
+        while len(test_fra) < config.CHUNK_SIZE:
             test_fra += fra
-        test_fra = test_fra[:400]
+        test_fra = test_fra[: config.CHUNK_SIZE]
         print(f"Sentence length : {len(test_fra)}")
         print(f"Token count : {len(model.tokenizer.tokenize(test_fra))}")
 

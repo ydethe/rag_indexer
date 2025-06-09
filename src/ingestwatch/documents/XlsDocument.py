@@ -1,13 +1,12 @@
 from typing import Iterable, Tuple
 
 import openpyxl
-from tqdm import tqdm
 
 from .. import logger
-from .Document import Document
+from .ADocument import ADocument
 
 
-class XlsDocument(Document):
+class XlsDocument(ADocument):
     def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
         try:
             wb = openpyxl.load_workbook(self.get_abs_path(), read_only=True, data_only=True)
@@ -19,7 +18,7 @@ class XlsDocument(Document):
         logger.info(f"Reading {nb_sheets} pages excel file")
         avct = -1
         all_text = []
-        for k_sheet, sheet in enumerate(tqdm(wb.worksheets)):
+        for k_sheet, sheet in enumerate(wb.worksheets):
             new_avct = int(k_sheet / nb_sheets * 100)
             if new_avct != avct:
                 logger.info(f"Lecture page {k_sheet+1}/{nb_sheets}")

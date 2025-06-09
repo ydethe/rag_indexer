@@ -962,7 +962,7 @@ wheels = [
 
 [[package]]
 name = "ingestwatch"
-version = "0.9+d20250609"
+version = "0.10.dev3+gfd78e72.d20250609"
 source = { editable = "." }
 dependencies = [
     { name = "gradio" },
@@ -982,7 +982,6 @@ dependencies = [
     { name = "qdrant-client" },
     { name = "sentence-transformers" },
     { name = "solus" },
-    { name = "tqdm" },
     { name = "watchdog" },
 ]
 
@@ -1027,7 +1026,6 @@ requires-dist = [
     { name = "qdrant-client", specifier = ">=1.14.2" },
     { name = "sentence-transformers", specifier = ">=4.1.0" },
     { name = "solus", specifier = ">=1.2.2" },
-    { name = "tqdm", specifier = ">=4.67.1" },
     { name = "watchdog", specifier = ">=6.0.0" },
 ]
 

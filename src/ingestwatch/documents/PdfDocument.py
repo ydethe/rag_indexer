@@ -4,10 +4,9 @@ from typing import Iterable, List, Tuple
 import pytesseract
 from pdf2image import convert_from_path
 from PyPDF2 import PdfReader
-from tqdm import tqdm
 
 from .. import logger
-from .Document import Document
+from .ADocument import ADocument
 from ..config import config
 
 
@@ -36,20 +35,20 @@ def ocr_pdf(path: Path, k_page: int) -> List[str]:
     return txt
 
 
-class PdfDocument(Document):
+class PdfDocument(ADocument):
     def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
         path = self.get_abs_path()
         try:
             reader = PdfReader(path)
+            nb_pages = len(reader.pages)
         except Exception:
             logger.error("Error while reading the file. Skipping")
             return None, {"ocr_used": False}
 
-        nb_pages = len(reader.pages)
         logger.info(f"Reading {nb_pages} pages pdf file")
         file_metadata = {"ocr_used": False}
         avct = -1
-        for k_page, page in enumerate(tqdm(reader.pages)):
+        for k_page, page in enumerate(reader.pages):
             new_avct = int(k_page / nb_pages * 100)
             if new_avct != avct:
                 logger.info(f"Lecture page {k_page+1}/{nb_pages}")

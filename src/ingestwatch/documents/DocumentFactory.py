@@ -4,7 +4,7 @@ from solus import Singleton
 from sentence_transformers import SentenceTransformer
 
 from ..models import ChunkType, EmbeddingType
-from .Document import Document
+from .ADocument import ADocument
 from .XlsDocument import XlsDocument
 from .PdfDocument import PdfDocument
 from .MarkdownDocument import MarkdownDocument
@@ -19,7 +19,7 @@ class DocumentFactory(Singleton):
     def register(self, ext: str, cls: type):
         self.__association[ext] = cls
 
-    def getBuild(self, ext: str) -> Document:
+    def getBuild(self, ext: str) -> ADocument:
         return self.__association[ext]
 
     def set_embedding_model(self, embedding_model: SentenceTransformer):
@@ -30,7 +30,7 @@ class DocumentFactory(Singleton):
     ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
         ext = abspath.suffix
         cls = self.getBuild(ext)
-        doc: Document = cls(abspath)
+        doc: ADocument = cls(abspath)
         for chunks, embeddings, file_metadata in doc.process(self.__embedding_model):
             yield chunks, embeddings, file_metadata
 
