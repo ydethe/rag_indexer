@@ -64,5 +64,5 @@ if __name__ == "__main__":
     a = TestIngestWatch()
 
     # a.test_config()
-    # a.test_main()
-    a.test_embeding()
+    a.test_main()
+    # a.test_embeding()

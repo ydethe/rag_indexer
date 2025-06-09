@@ -130,8 +130,8 @@ class DocumentIndexer:
         # 3. For each modified file on disk, process its chunks
         tot_nb_files = len(files_to_index)
         for n_file, file_path in enumerate(files_to_index):
-            logger.info(f"Initial indexation of {n_file}/{tot_nb_files} - '{file_path}'")
             relpath = file_path.relative_to(config.DOCS_PATH)
+            logger.info(f"Initial indexation of {n_file}/{tot_nb_files} - '{relpath}'")
             stored = get_stored_timestamp(relpath)
             modified = os.path.getmtime(str(file_path))
             self.process_file(file_path)
