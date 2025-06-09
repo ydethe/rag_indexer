@@ -33,7 +33,11 @@ def ocr_pdf(path: Path, nb_pages: int) -> List[str]:
             time_img += time.time() - t0
 
             t0 = time.time()
-            txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
+            try:
+                txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
+            except Exception as e:
+                logger.error(f"OCR failed : {e}")
+                txt = ""
             time_ocr += time.time() - t0
             with open(ocr_txt, "w") as f:
                 f.write(txt)
@@ -55,13 +59,17 @@ class PdfDocument(Document):
         try:
             reader = PdfReader(path)
         except Exception:
-            logger.warning("Error while reading the file. Skipping")
+            logger.error("Error while reading the file. Skipping")
             return None, {"ocr_used": False}
 
         nb_pages = len(reader.pages)
         logger.info(f"Reading {nb_pages} pages pdf file")
         for page in reader.pages:
-            txt = page.extract_text() or ""
+            try:
+                txt = page.extract_text() or ""
+            except Exception as e:
+                logger.error(f"While extracting text: {e}")
+                txt = ""
             text_chunks.append(txt)
             len_text += len(txt)
 
