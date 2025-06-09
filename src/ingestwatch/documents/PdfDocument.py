@@ -26,7 +26,7 @@ def ocr_pdf(path: Path, nb_pages: int) -> List[str]:
             img = convert_from_path(path, first_page=k_page, last_page=k_page, dpi=300)[0]
             img.save(ocr_page)
 
-        ocr_txt = ocr_dir / f"page{k_page}.txt"
+        ocr_txt = ocr_dir / f"page{k_page}.cache"
         if ocr_txt.exists():
             with open(ocr_txt, "r") as f:
                 txt = f.read()
