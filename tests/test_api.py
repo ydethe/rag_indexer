@@ -21,9 +21,17 @@ class TestIngestWatch(unittest.TestCase):
             backend="openvino",
             model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
         )
+        print(f"Max token length : {model.tokenizer.model_max_length}")
 
         # Case where the sentences are similar
-        fra = "Aujourd'hui, le temps est beau et il pleuvra demain"
+        fra = "Aujourd'hui, le temps est beau et il pleuvra demain. "
+        test_fra = ""
+        while len(test_fra) < 400:
+            test_fra += fra
+        test_fra = test_fra[:400]
+        print(f"Sentence length : {len(test_fra)}")
+        print(f"Token count : {len(model.tokenizer.tokenize(test_fra))}")
+
         fra_emb = model.encode([fra], device="cpu", show_progress_bar=False, convert_to_tensor=True)
 
         eng = "Today the weather is fine, tomorrow it will rain"

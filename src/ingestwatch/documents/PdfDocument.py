@@ -1,24 +1,43 @@
 from pathlib import Path
-from typing import Tuple
+from typing import List, Tuple
 
 import pytesseract
 from pdf2image import convert_from_path
 from PyPDF2 import PdfReader
+from PIL import Image
 
 from .. import logger
 from .Document import Document
 from ..config import config
 
 
-def ocr_pdf(path: Path, nb_pages: int) -> str:
+def ocr_pdf(path: Path, nb_pages: int) -> List[str]:
     text = []
     logger.info("OCR")
+    ocr_dir = path / ".ocr"
+    ocr_dir.mkdir(parents=True, exist_ok=True)
+
     # Convert each page to an image
     for k_page in range(1, 1 + nb_pages):
-        images = convert_from_path(path, first_page=k_page, last_page=k_page, dpi=300)
-        for img in images:
+        ocr_page = ocr_dir / f"page{k_page}.png"
+        if ocr_page.exists():
+            img = Image.open(ocr_page)
+        else:
+            img = convert_from_path(path, first_page=k_page, last_page=k_page, dpi=300)[0]
+            img.save(ocr_page)
+
+        ocr_txt = ocr_dir / f"page{k_page}.txt"
+        if ocr_txt.exists():
+            with open(ocr_txt, "r") as f:
+                txt = f.read()
+        else:
             txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
-            text.append(txt)
+            with open(ocr_txt, "w") as f:
+                f.write(txt)
+
+        text.append(txt)
+
+    return text
 
 
 class PdfDocument(Document):

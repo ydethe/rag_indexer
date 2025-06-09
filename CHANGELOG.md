@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added unit test to check embedding relevance ([d9e072f](https://github.com/ydethe/rag_indexer/commit/d9e072ffc96e832b2ca336a983f2ee1127f5460a) by Yann de The).
 - Added progress bars for file analysis. pdf tested OK ([be49834](https://github.com/ydethe/rag_indexer/commit/be49834155c7b30d3ad5a4abfd08174d3cd229fe) by Yann de The).
 - Added sqlite db to keep track of the indexed files ([8f5c67f](https://github.com/ydethe/rag_indexer/commit/8f5c67ffa1c27698802ac9d3b1274b087656d5d9) by Yann de The).
 

@@ -119,13 +119,22 @@ class DocumentIndexer:
         disk_files = [p.resolve() for p in disk_files]
 
         # 2. For each file on disk, check timestamp vs. state DB
+        files_to_index = []
         for file_path in disk_files:
             relpath = file_path.relative_to(config.DOCS_PATH)
             stored = get_stored_timestamp(relpath)
             modified = os.path.getmtime(str(file_path))
             if stored is None or stored != modified:
-                # New or changed
-                self.process_file(file_path)
+                files_to_index.append(file_path)
+
+        # 3. For each modified file on disk, process its chunks
+        tot_nb_files = len(files_to_index)
+        for n_file, file_path in enumerate(files_to_index):
+            logger.info(f"Initial indexation of {n_file}/{tot_nb_files} - '{file_path}'")
+            relpath = file_path.relative_to(config.DOCS_PATH)
+            stored = get_stored_timestamp(relpath)
+            modified = os.path.getmtime(str(file_path))
+            self.process_file(file_path)
 
         # 3. For each file in state DB, if not on disk anymore, delete from Qdrant
         for relpath in list_stored_files():

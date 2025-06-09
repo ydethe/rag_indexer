@@ -49,14 +49,8 @@ class Document(ABC):
         self, text: str, embedding_model: SentenceTransformer
     ) -> Tuple[List[str], List[List[float]]]:
         chunks = self.__get_chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
-        batch_size = 32
-        embeddings = []
-        logger.info(f"Embedding {len(chunks)} chunks in {len(chunks)// batch_size+1} batches")
-        for nb_batch in range(0, len(chunks), batch_size):
-            batch = chunks[nb_batch : nb_batch + batch_size]
-            embeddings.extend(
-                embedding_model.encode(batch, device="cpu", show_progress_bar=True).tolist()
-            )
+        logger.info(f"Embedding {len(chunks)} chunks")
+        embeddings = embedding_model.encode(chunks, device="cpu", show_progress_bar=True).tolist()
         return chunks, embeddings
 
     def process(
