@@ -15,9 +15,16 @@ class XlsDocument(Document):
             logger.warning("Error while reading the file. Skipping")
             return None, {"ocr_used": False}
 
-        logger.info(f"Reading {len(wb.worksheets)} pages excel file")
+        nb_sheets = len(wb.worksheets)
+        logger.info(f"Reading {nb_sheets} pages excel file")
+        avct = -1
         all_text = []
-        for sheet in tqdm(wb.worksheets):
+        for k_sheet, sheet in enumerate(tqdm(wb.worksheets)):
+            new_avct = int(k_sheet / nb_sheets * 100)
+            if new_avct != avct:
+                logger.info(f"Lecture page {k_sheet+1}/{nb_sheets}")
+                avct = new_avct
+
             for row in sheet.iter_rows(values_only=True):
                 row_text = [str(cell) for cell in row if cell is not None]
                 if row_text:

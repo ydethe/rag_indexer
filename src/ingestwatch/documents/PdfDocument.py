@@ -46,9 +46,15 @@ class PdfDocument(Document):
             return None, {"ocr_used": False}
 
         nb_pages = len(reader.pages)
-        file_metadata = {"ocr_used": False}
         logger.info(f"Reading {nb_pages} pages pdf file")
+        file_metadata = {"ocr_used": False}
+        avct = -1
         for k_page, page in enumerate(tqdm(reader.pages)):
+            new_avct = int(k_page / nb_pages * 100)
+            if new_avct != avct:
+                logger.info(f"Lecture page {k_page+1}/{nb_pages}")
+                avct = new_avct
+
             try:
                 txt = page.extract_text() or ""
             except Exception as e:
