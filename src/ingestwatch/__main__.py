@@ -6,7 +6,6 @@ import torch
 from .index_database import initialize_state_db
 from .config import config
 from . import logger
-from .frontend import ChatDocFontend
 from .DocumentIndexer import DocumentIndexer
 
 
@@ -32,9 +31,6 @@ def main():
 
     # Start the filesystem watcher loop
     indexer.start_watcher()
-
-    frontend = ChatDocFontend()
-    frontend.start()
 
 
 if __name__ == "__main__":

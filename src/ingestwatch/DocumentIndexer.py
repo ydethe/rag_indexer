@@ -215,12 +215,10 @@ class DocumentIndexer:
         self.__observer.start()
 
         logger.info(f"Started file watcher on: '{config.DOCS_PATH}'")
-        # try:
-        #     while True:
-        #         time.sleep(1)
-        # except KeyboardInterrupt:
-        #     self.__observer.stop()
-        # self.__observer.join()
-
-    def join(self):
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            self.__observer.stop()
         self.__observer.join()
+        
