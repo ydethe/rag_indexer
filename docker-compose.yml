@@ -25,7 +25,7 @@ services:
       - "homepage.href=https://qdrant.$HOST/dashboard"
       - "homepage.description=$HOME_DESCRIPTION"
 
-  ingestion:
+  ragindexer:
     build: .
     restart: unless-stopped
     depends_on:
@@ -49,6 +49,24 @@ services:
       - CHUNK_SIZE=$CHUNK_SIZE
       - CHUNK_OVERLAP=$CHUNK_OVERLAP
       - OCR_LANG=$OCR_LANG
+      - TORCH_NUM_THREADS=$TORCH_NUM_THREADS
+
+  ragwebui:
+    image: ydethe/ragwebui:latest
+    restart: unless-stopped
+    depends_on:
+      - qdrant
+    environment:
+      - LOGLEVEL=$LOGLEVEL
+      - QDRANT_HOST=$QDRANT_HOST
+      - QDRANT_PORT=$QDRANT_PORT
+      - QDRANT_QUERY_LIMIT=$QDRANT_QUERY_LIMIT
+      - OPENAI_API_KEY=$OPENAI_API_KEY
+      - COLLECTION_NAME=$COLLECTION_NAME
+      - DAV_ROOT=$DAV_ROOT
+      - EMBEDDING_MODEL=$EMBEDDING_MODEL
+      - EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
+      - OPEN_MODEL_PREF=$OPEN_MODEL_PREF
       - TORCH_NUM_THREADS=$TORCH_NUM_THREADS
     labels:
       - "traefik.enable=true"
