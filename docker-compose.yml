@@ -32,7 +32,7 @@ services:
       - qdrant
     volumes:
       - /home/yann/johncloud_data/sftpgo/data/ydethe/Documents:/docs:ro
-      - /home/yann/repos/rag_indexer/.root:/code
+      - /home/yann/repos/ragindexer/.root:/code
     environment:
       - LOGLEVEL=$LOGLEVEL
       - QDRANT_HOST=$QDRANT_HOST
