@@ -28,6 +28,12 @@ from .models import ChunkType, EmbeddingType
 
 
 class DocumentIndexer:
+    """
+    Object that reacts to filesystem events (document creation/modification/deletion)
+    and updates the databases
+
+    """
+
     def __init__(self):
         # Load embedding model
         self.model = SentenceTransformer(
@@ -54,6 +60,15 @@ class DocumentIndexer:
     def extract_text(
         self, abspath: Path
     ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
+        """Extract chunks, embeddings and metadata from file path
+
+        Args:
+            abspath: Path to a file to analyse
+
+        Yields:
+            A tuple with a list of chunks, the corresponding list of embeddings, and the file metadata
+
+        """
         doc_factory = DocumentFactory()
         for chunks, embeddings, file_metadata in doc_factory.processDocument(abspath):
             yield chunks, embeddings, file_metadata
@@ -61,6 +76,10 @@ class DocumentIndexer:
     def process_file(self, filepath: Path):
         """
         Extract text, chunk, embed, and upsert into Qdrant.
+
+        Args:
+            filepath: Path to the file to be analyzed
+
         """
         relpath = filepath.relative_to(config.DOCS_PATH)
         stat = os.path.getmtime(filepath)
@@ -87,6 +106,10 @@ class DocumentIndexer:
         We identify by regenerating all chunk IDs for old state—but since we store
         last-modified in SQLite, we know it existed before; we'll iterate over state DB
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
+
+        Args:
+            relpath: Path to the file to be analyzed, relative to DOCS_PATH
+
         """
         logger.info(f"[DELETE] Removing file from index: '{relpath}'")
 
@@ -143,7 +166,7 @@ class DocumentIndexer:
                 # Remove from Qdrant
                 self.remove_file(relpath)
 
-    def on_created_or_modified(self, event: FileSystemEvent):
+    def __on_created_or_modified(self, event: FileSystemEvent):
         if event.is_directory:
             return
 
@@ -154,7 +177,7 @@ class DocumentIndexer:
                 time.sleep(0.5)
                 self.process_file(filepath)
 
-    def on_deleted(self, event: FileSystemEvent):
+    def __on_deleted(self, event: FileSystemEvent):
         if event.is_directory:
             return
 
@@ -163,7 +186,7 @@ class DocumentIndexer:
             with self.lock:
                 self.remove_file(filepath)
 
-    def on_moved(self, event: FileSystemEvent):
+    def __on_moved(self, event: FileSystemEvent):
         # TODO Implement folder and file renaming
         if event.is_directory:
             return
@@ -177,11 +200,15 @@ class DocumentIndexer:
                 self.process_file(destpath)
 
     def start_watcher(self):
+        """
+        Launch the filesystem monitoring as a non blocking thread
+
+        """
         event_handler = FileSystemEventHandler()
-        event_handler.on_created = self.on_created_or_modified
-        event_handler.on_modified = self.on_created_or_modified
-        event_handler.on_moved = self.on_moved
-        event_handler.on_deleted = self.on_deleted
+        event_handler.on_created = self.__on_created_or_modified
+        event_handler.on_modified = self.__on_created_or_modified
+        event_handler.on_moved = self.__on_moved
+        event_handler.on_deleted = self.__on_deleted
 
         self.__observer = Observer()
         self.__observer.schedule(event_handler, path=str(self.root), recursive=True)

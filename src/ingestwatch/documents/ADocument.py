@@ -11,15 +11,36 @@ from ..models import ChunkType, EmbeddingType
 
 
 class ADocument(ABC):
+    """
+    Handle documents based on their extension
+
+    Args:
+        abspath: Path to the file to handle
+
+    """
+
     def __init__(self, abspath: Path):
         self.__abspath = abspath
 
     def get_abs_path(self) -> Path:
+        """
+        Get the abspath to the handled file
+
+        Returns:
+            Path to the handled file
+
+        """
         return self.__abspath
 
     @abstractmethod
     def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
-        pass
+        """
+        Abstract method that should implement the concrete way to handle the file.
+
+        Yields:
+            A tuple with extracted text and file metadata
+
+        """
 
     def __get_chunk_text(self, text: str, chunk_size: int, chunk_overlap: int) -> List[ChunkType]:
         """

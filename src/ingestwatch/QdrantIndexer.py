@@ -50,7 +50,8 @@ class QdrantIndexer:
         query_filter: Optional[types.Filter] = None,
     ):
         """Search a vector in the database
-        See https://python-client.qdrant.tech/quickstart#Points for more details
+        See https://qdrant.tech/documentation/concepts/search/
+        and https://qdrant.tech/documentation/concepts/filtering/ for more details
 
         Args:
             query_vector: Search for vectors closest to this. If None, allows listing ids

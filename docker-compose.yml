@@ -49,6 +49,7 @@ services:
       - CHUNK_SIZE=$CHUNK_SIZE
       - CHUNK_OVERLAP=$CHUNK_OVERLAP
       - OCR_LANG=$OCR_LANG
+      - TORCH_NUM_THREADS=$TORCH_NUM_THREADS
     labels:
       - "traefik.enable=true"
 

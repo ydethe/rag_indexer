@@ -11,7 +11,7 @@ from .DocumentIndexer import DocumentIndexer
 
 
 def main():
-    torch.set_num_threads(3)
+    torch.set_num_threads(config.TORCH_NUM_THREADS)
 
     # === Ensure NLTK punkt is available ===
     nltk.download("punkt_tab")

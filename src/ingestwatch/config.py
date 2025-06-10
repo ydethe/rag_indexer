@@ -23,6 +23,7 @@ class Config(BaseSettings):
     CHUNK_SIZE: int
     CHUNK_OVERLAP: int
     OCR_LANG: str
+    TORCH_NUM_THREADS: int
 
 
 config = Config()
