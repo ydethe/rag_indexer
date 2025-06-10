@@ -71,13 +71,15 @@ class DocumentIndexer:
 
         logger.info(72 * "=")
         logger.info(f"[INDEX] Processing changed file: '{filepath}'")
+        nb_emb = 0
         for chunks, embeddings, file_metadata in self.extract_text(filepath):
             # Upsert into Qdrant
             self.qdrant.record_embeddings(chunks, embeddings, file_metadata)
+            nb_emb += len(embeddings)
 
         # Update state DB
         set_stored_timestamp(relpath, stat)
-        logger.info("[INDEX] Upserted vectors")
+        logger.info(f"[INDEX] Upserted {nb_emb} vectors")
 
     def remove_file(self, relpath: Path):
         """

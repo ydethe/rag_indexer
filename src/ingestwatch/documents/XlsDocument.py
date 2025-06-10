@@ -19,7 +19,7 @@ class XlsDocument(ADocument):
         avct = -1
         all_text = []
         for k_sheet, sheet in enumerate(wb.worksheets):
-            new_avct = int(k_sheet / nb_sheets * 100)
+            new_avct = int(k_sheet / nb_sheets * 100 / 10)
             if new_avct != avct:
                 logger.info(f"Lecture page {k_sheet+1}/{nb_sheets}")
                 avct = new_avct

@@ -18,7 +18,7 @@ class DocDocument(ADocument):
         logger.info(f"Reading {page_count} pages doc file")
         avct = -1
         for k_page, p in enumerate(doc.paragraphs):
-            new_avct = int(k_page / page_count * 100)
+            new_avct = int(k_page / page_count * 100 / 10)
             if new_avct != avct:
                 logger.info(f"Lecture page {k_page+1}/{page_count}")
                 avct = new_avct

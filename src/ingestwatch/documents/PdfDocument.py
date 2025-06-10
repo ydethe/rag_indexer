@@ -49,7 +49,7 @@ class PdfDocument(ADocument):
         file_metadata = {"ocr_used": False}
         avct = -1
         for k_page, page in enumerate(reader.pages):
-            new_avct = int(k_page / nb_pages * 100)
+            new_avct = int(k_page / nb_pages * 100 / 10)
             if new_avct != avct:
                 logger.info(f"Lecture page {k_page+1}/{nb_pages}")
                 avct = new_avct
