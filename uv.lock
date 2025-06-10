@@ -961,97 +961,6 @@ wheels = [
 ]
 
 [[package]]
-name = "ingestwatch"
-version = "0.10.dev3+gfd78e72.d20250609"
-source = { editable = "." }
-dependencies = [
-    { name = "gradio" },
-    { name = "markdown" },
-    { name = "nltk" },
-    { name = "numpy" },
-    { name = "openai" },
-    { name = "openpyxl" },
-    { name = "optimum", extra = ["openvino"] },
-    { name = "pdf2image" },
-    { name = "pillow" },
-    { name = "pydantic-settings" },
-    { name = "pypdf2" },
-    { name = "pytesseract" },
-    { name = "python-docx" },
-    { name = "python-json-logger" },
-    { name = "qdrant-client" },
-    { name = "sentence-transformers" },
-    { name = "solus" },
-    { name = "watchdog" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "black" },
-    { name = "ipython" },
-    { name = "pre-commit" },
-]
-doc = [
-    { name = "pdoc3" },
-    { name = "pylint" },
-]
-test = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-html" },
-    { name = "pytest-instafail" },
-    { name = "pytest-mock" },
-    { name = "pytest-picked" },
-    { name = "pytest-sugar" },
-    { name = "pytest-xdist" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "gradio", specifier = ">=5.33.0" },
-    { name = "markdown", specifier = ">=3.8" },
-    { name = "nltk", specifier = ">=3.9.1" },
-    { name = "numpy", specifier = ">=2.2.6" },
-    { name = "openai", specifier = ">=1.84.0" },
-    { name = "openpyxl", specifier = ">=3.1.5" },
-    { name = "optimum", extras = ["openvino"], specifier = ">=1.25.3" },
-    { name = "pdf2image", specifier = ">=1.17.0" },
-    { name = "pillow", specifier = ">=11.2.1" },
-    { name = "pydantic-settings", specifier = ">=2.9.1" },
-    { name = "pypdf2", specifier = ">=3.0.1" },
-    { name = "pytesseract", specifier = ">=0.3.13" },
-    { name = "python-docx", specifier = ">=1.1.2" },
-    { name = "python-json-logger", specifier = ">=3.3.0" },
-    { name = "qdrant-client", specifier = ">=1.14.2" },
-    { name = "sentence-transformers", specifier = ">=4.1.0" },
-    { name = "solus", specifier = ">=1.2.2" },
-    { name = "watchdog", specifier = ">=6.0.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = "==22.3.0" },
-    { name = "ipython", specifier = ">=8.30.0" },
-    { name = "pre-commit", specifier = ">=4.0.1" },
-]
-doc = [
-    { name = "pdoc3", specifier = ">=0.11.3" },
-    { name = "pylint", specifier = ">=3.3.2" },
-]
-test = [
-    { name = "pytest", specifier = ">=8.3.4" },
-    { name = "pytest-asyncio", specifier = ">=0.25.0" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "pytest-html", specifier = ">=4.1.1" },
-    { name = "pytest-instafail", specifier = ">=0.5.0" },
-    { name = "pytest-mock", specifier = ">=3.14.0" },
-    { name = "pytest-picked", specifier = ">=0.5.1" },
-    { name = "pytest-sugar", specifier = ">=1.0.0" },
-    { name = "pytest-xdist", specifier = ">=3.6.1" },
-]
-
-[[package]]
 name = "iniconfig"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2995,6 +2904,97 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/00/80/b84c4c52106b6da291829d8ec632f58a5692d2772e8d3c1d3be4f9a47a2e/qdrant_client-1.14.2.tar.gz", hash = "sha256:da5cab4d367d099d1330b6f30d45aefc8bd76f8b8f9d8fa5d4f813501b93af0d", size = 285531 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e4/52/f49b0aa96253010f57cf80315edecec4f469e7a39c1ed92bf727fa290e57/qdrant_client-1.14.2-py3-none-any.whl", hash = "sha256:7c283b1f0e71db9c21b85d898fb395791caca2a6d56ee751da96d797b001410c", size = 327691 },
+]
+
+[[package]]
+name = "ragindexer"
+version = "0.11.dev2+g3f915e0"
+source = { editable = "." }
+dependencies = [
+    { name = "gradio" },
+    { name = "markdown" },
+    { name = "nltk" },
+    { name = "numpy" },
+    { name = "openai" },
+    { name = "openpyxl" },
+    { name = "optimum", extra = ["openvino"] },
+    { name = "pdf2image" },
+    { name = "pillow" },
+    { name = "pydantic-settings" },
+    { name = "pypdf2" },
+    { name = "pytesseract" },
+    { name = "python-docx" },
+    { name = "python-json-logger" },
+    { name = "qdrant-client" },
+    { name = "sentence-transformers" },
+    { name = "solus" },
+    { name = "watchdog" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "black" },
+    { name = "ipython" },
+    { name = "pre-commit" },
+]
+doc = [
+    { name = "pdoc3" },
+    { name = "pylint" },
+]
+test = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "pytest-html" },
+    { name = "pytest-instafail" },
+    { name = "pytest-mock" },
+    { name = "pytest-picked" },
+    { name = "pytest-sugar" },
+    { name = "pytest-xdist" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gradio", specifier = ">=5.33.0" },
+    { name = "markdown", specifier = ">=3.8" },
+    { name = "nltk", specifier = ">=3.9.1" },
+    { name = "numpy", specifier = ">=2.2.6" },
+    { name = "openai", specifier = ">=1.84.0" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "optimum", extras = ["openvino"], specifier = ">=1.25.3" },
+    { name = "pdf2image", specifier = ">=1.17.0" },
+    { name = "pillow", specifier = ">=11.2.1" },
+    { name = "pydantic-settings", specifier = ">=2.9.1" },
+    { name = "pypdf2", specifier = ">=3.0.1" },
+    { name = "pytesseract", specifier = ">=0.3.13" },
+    { name = "python-docx", specifier = ">=1.1.2" },
+    { name = "python-json-logger", specifier = ">=3.3.0" },
+    { name = "qdrant-client", specifier = ">=1.14.2" },
+    { name = "sentence-transformers", specifier = ">=4.1.0" },
+    { name = "solus", specifier = ">=1.2.2" },
+    { name = "watchdog", specifier = ">=6.0.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = "==22.3.0" },
+    { name = "ipython", specifier = ">=8.30.0" },
+    { name = "pre-commit", specifier = ">=4.0.1" },
+]
+doc = [
+    { name = "pdoc3", specifier = ">=0.11.3" },
+    { name = "pylint", specifier = ">=3.3.2" },
+]
+test = [
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-asyncio", specifier = ">=0.25.0" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "pytest-html", specifier = ">=4.1.1" },
+    { name = "pytest-instafail", specifier = ">=0.5.0" },
+    { name = "pytest-mock", specifier = ">=3.14.0" },
+    { name = "pytest-picked", specifier = ">=0.5.1" },
+    { name = "pytest-sugar", specifier = ">=1.0.0" },
+    { name = "pytest-xdist", specifier = ">=3.6.1" },
 ]
 
 [[package]]

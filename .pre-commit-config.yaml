@@ -8,6 +8,13 @@ repos:
   rev: v0.1.9
 
 - hooks:
+  - id: uv-lock
+  - id: uv-export
+    args: ["--no-editable", "--no-emit-project"]
+  repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.7.12
+
+- hooks:
   - id: check-case-conflict
   - id: check-merge-conflict
   - id: mixed-line-ending
