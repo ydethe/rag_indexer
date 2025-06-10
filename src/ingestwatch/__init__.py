@@ -4,7 +4,7 @@
 
 # CLI usage
 
-ingestwatch comes with a CLI tool called ingestwatch.
+ragindexer comes with a CLI tool called ragindexer.
 
 # Testing
 
@@ -50,6 +50,6 @@ logger.addHandler(logHandler)
 log_pth = Path("logs")
 if not log_pth.exists():
     log_pth.mkdir(exist_ok=True)
-file_handler = RotatingFileHandler("logs/ingestwatch.log", maxBytes=10e6, backupCount=5)
+file_handler = RotatingFileHandler("logs/ragindexer.log", maxBytes=10e6, backupCount=5)
 
 logger.addHandler(file_handler)

@@ -70,4 +70,4 @@ RUN ./venv/bin/python -m pip install --no-cache-dir *.whl && \
 # Expose the port the app will run on
 EXPOSE 7860
 
-CMD ["/app/venv/bin/python", "-m" , "ingestwatch"]
+CMD ["/app/venv/bin/python", "-m" , "ragindexer"]

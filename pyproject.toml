@@ -3,7 +3,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project]
-name = "ingestwatch"
+name = "ragindexer"
 dynamic = ["version"]
 requires-python = ">=3.11"
 readme = "README.md"
@@ -33,9 +33,9 @@ dependencies = [
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/ydethe/ingestwatch/-/issues"
-Homepage = "https://github.com/ydethe/ingestwatch"
-Source = "https://github.com/ydethe/ingestwatch"
+"Bug Tracker" = "https://github.com/ydethe/ragindexer/-/issues"
+Homepage = "https://github.com/ydethe/ragindexer"
+Source = "https://github.com/ydethe/ragindexer"
 
 [tool.pylint.format]
 max-line-length = 100

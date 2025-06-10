@@ -3,8 +3,8 @@ import unittest
 from sentence_transformers import SentenceTransformer
 import torch.nn.functional as F
 
-from ingestwatch.config import config
-from ingestwatch.__main__ import main
+from ragindexer.config import config
+from ragindexer.__main__ import main
 
 
 class TestIngestWatch(unittest.TestCase):
