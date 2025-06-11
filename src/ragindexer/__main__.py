@@ -13,8 +13,8 @@ def main():
     torch.set_num_threads(config.TORCH_NUM_THREADS)
 
     # === Ensure NLTK punkt is available ===
-    nltk.download("punkt_tab")
-    nltk.download("punkt")
+    nltk.download("punkt", download_dir="/code/nltk")
+    nltk.data.path.append("/code/nltk")
 
     # Ensure state DB exists
     initialize_state_db()

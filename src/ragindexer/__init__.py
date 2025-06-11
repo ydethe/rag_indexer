@@ -12,7 +12,7 @@ ragindexer comes with a CLI tool called ragindexer.
 
 To run tests, just run:
 
-    uv run pytest
+    pytest
 
 ## Test reports
 
@@ -26,8 +26,6 @@ To run tests, just run:
 
 import sys
 import logging
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 from pythonjsonlogger import jsonlogger
 
@@ -46,10 +44,3 @@ formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(messa
 
 logHandler.setFormatter(formatter)
 logger.addHandler(logHandler)
-
-log_pth = Path("logs")
-if not log_pth.exists():
-    log_pth.mkdir(exist_ok=True)
-file_handler = RotatingFileHandler("logs/ragindexer.log", maxBytes=10e6, backupCount=5)
-
-logger.addHandler(file_handler)

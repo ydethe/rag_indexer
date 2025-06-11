@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed bug where a whole pdf file is skipped if one page has no text ([301e5eb](https://github.com/ydethe/ragindexer/commit/301e5eb7db159b4ca5a69fce8c26c5fc21224ed9) by Yann de The).
 - Fixed image name ([eadcf30](https://github.com/ydethe/ragindexer/commit/eadcf3044c877e6b9cd01b20ab3a3bb7204e509f) by Yann de The).
 - Fixed pdf error ([cff80bb](https://github.com/ydethe/ragindexer/commit/cff80bbb69e929a6e53d1617ef30b091e88336d8) by Yann de The).
 - Fixed action ([694bde7](https://github.com/ydethe/ragindexer/commit/694bde7e470a78f8270edde54fa4752fed7d0ed0) by Yann de The).

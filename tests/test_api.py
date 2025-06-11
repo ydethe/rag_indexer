@@ -4,12 +4,15 @@ from sentence_transformers import SentenceTransformer
 import torch.nn.functional as F
 
 from ragindexer.config import config
+from ragindexer.QdrantIndexer import QdrantIndexer
 from ragindexer.__main__ import main
 
 
 class TestIngestWatch(unittest.TestCase):
     def test_config(self):
-        print(config)
+        qdrant = QdrantIndexer(384)
+        hits = qdrant.search()
+        print(hits[0])
 
     def test_main(self):
         main()
@@ -63,6 +66,6 @@ class TestIngestWatch(unittest.TestCase):
 if __name__ == "__main__":
     a = TestIngestWatch()
 
-    # a.test_config()
+    a.test_config()
     # a.test_main()
-    a.test_embeding()
+    # a.test_embeding()

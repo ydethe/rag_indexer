@@ -29,8 +29,8 @@ class QdrantIndexer:
         self.__client = QdrantClient(
             host=config.QDRANT_HOST,
             port=config.QDRANT_PORT,
-            # api_key=config.QDRANT_API_KEY,
-            https=False,
+            api_key=config.QDRANT_API_KEY,
+            https=config.QDRANT_HTTPS,
         )
 
         self.vector_size = vector_size
@@ -69,12 +69,13 @@ class QdrantIndexer:
         else:
             query_vect = query_vector
 
-        hits = self.__client.search(
+        hits = self.__client.query_points(
             collection_name=config.COLLECTION_NAME,
-            query_vector=query_vect,
+            query=query_vect,
             limit=limit,
             query_filter=query_filter,
-        )
+            with_payload=True,
+        ).points
         return hits
 
     def create_collection_if_missing(self):
