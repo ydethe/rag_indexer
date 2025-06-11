@@ -18,8 +18,8 @@ class TestIngestWatch(unittest.TestCase):
         model = SentenceTransformer(
             config.EMBEDDING_MODEL,
             trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
-            backend="openvino",
-            model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
+            backend="torch",
+            # model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
         )
         print(f"Max token length : {model.tokenizer.model_max_length}")
 
@@ -33,6 +33,7 @@ class TestIngestWatch(unittest.TestCase):
         print(f"Token count : {len(model.tokenizer.tokenize(test_fra))}")
 
         fra_emb = model.encode([fra], device="cpu", show_progress_bar=False, convert_to_tensor=True)
+        print(fra_emb.shape)
 
         eng = "Today the weather is fine, tomorrow it will rain"
         eng_emb = model.encode([eng], device="cpu", show_progress_bar=False, convert_to_tensor=True)
@@ -64,5 +65,5 @@ if __name__ == "__main__":
     a = TestIngestWatch()
 
     # a.test_config()
-    a.test_main()
-    # a.test_embeding()
+    # a.test_main()
+    a.test_embeding()
