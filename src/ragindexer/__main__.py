@@ -14,6 +14,7 @@ def main():
 
     # === Ensure NLTK punkt is available ===
     nltk.download("punkt", download_dir="/code/nltk")
+    nltk.download("punkt_tab", download_dir="/code/nltk")
     nltk.data.path.append("/code/nltk")
 
     # Ensure state DB exists
