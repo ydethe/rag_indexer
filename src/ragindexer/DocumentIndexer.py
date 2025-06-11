@@ -39,9 +39,7 @@ class DocumentIndexer:
         self.model = SentenceTransformer(
             config.EMBEDDING_MODEL,
             trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
-            backend="openvino",
-            # 'openvino/openvino_model_qint8_quantized.xml', 'openvino/openvino_model.xml'
-            model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
+            backend="torch",
         )
         self.vector_size = self.model.get_sentence_embedding_dimension()
         self.doc_factory = DocumentFactory()

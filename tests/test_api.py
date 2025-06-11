@@ -19,7 +19,6 @@ class TestIngestWatch(unittest.TestCase):
             config.EMBEDDING_MODEL,
             trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
             backend="torch",
-            # model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
         )
         print(f"Max token length : {model.tokenizer.model_max_length}")
 
