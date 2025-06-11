@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed image name ([eadcf30](https://github.com/ydethe/ragindexer/commit/eadcf3044c877e6b9cd01b20ab3a3bb7204e509f) by Yann de The).
 - Fixed pdf error ([cff80bb](https://github.com/ydethe/ragindexer/commit/cff80bbb69e929a6e53d1617ef30b091e88336d8) by Yann de The).
 - Fixed action ([694bde7](https://github.com/ydethe/ragindexer/commit/694bde7e470a78f8270edde54fa4752fed7d0ed0) by Yann de The).
 - Fixed docker compose stack ([814adf6](https://github.com/ydethe/ragindexer/commit/814adf6ccf826eabe9e3004d762c2115f89d2e4c) by Yann de The).
@@ -29,6 +30,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
+- Removed openvino backend ([173f987](https://github.com/ydethe/ragindexer/commit/173f987437949e0c7802bdc0aefa9e078f8f104a) by Yann de The).
+- Removed frontend ([ae2d107](https://github.com/ydethe/ragindexer/commit/ae2d1079aada5871a07e4478d6e560d5eae88884) by Yann de The).
 - Removed cuda whl files ([da171ab](https://github.com/ydethe/ragindexer/commit/da171ab5d7d811ff9dde4ccfb4bf06e055efef3a) by Yann de The).
 - Removed openapi key from ingestion image ([a56abcb](https://github.com/ydethe/ragindexer/commit/a56abcb933960ce1a4a4cea974bc23ec51b37607) by Yann de The).
 

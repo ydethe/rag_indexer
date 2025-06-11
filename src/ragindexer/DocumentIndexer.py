@@ -44,8 +44,8 @@ class DocumentIndexer:
             model_kwargs={"file_name": "openvino/openvino_model_qint8_quantized.xml"},
         )
         self.vector_size = self.model.get_sentence_embedding_dimension()
-        doc_factory = DocumentFactory()
-        doc_factory.set_embedding_model(self.model)
+        self.doc_factory = DocumentFactory()
+        self.doc_factory.set_embedding_model(self.model)
 
         # Initialize Qdrant
         self.qdrant = QdrantIndexer(vector_size=self.vector_size)
@@ -69,8 +69,7 @@ class DocumentIndexer:
             A tuple with a list of chunks, the corresponding list of embeddings, and the file metadata
 
         """
-        doc_factory = DocumentFactory()
-        for chunks, embeddings, file_metadata in doc_factory.processDocument(abspath):
+        for chunks, embeddings, file_metadata in self.doc_factory.processDocument(abspath):
             yield chunks, embeddings, file_metadata
 
     def process_file(self, filepath: Path):
@@ -171,20 +170,24 @@ class DocumentIndexer:
             return
 
         filepath = Path(event.src_path)
-        if filepath.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
-            with self.lock:
-                # Small delay to allow file write to finish
-                time.sleep(0.5)
-                self.process_file(filepath)
+        if not self.doc_factory.filter_file(filepath):
+            return
+
+        with self.lock:
+            # Small delay to allow file write to finish
+            time.sleep(0.5)
+            self.process_file(filepath)
 
     def __on_deleted(self, event: FileSystemEvent):
         if event.is_directory:
             return
 
         filepath = Path(event.src_path)
-        if filepath.suffix in (".pdf", ".docx", ".xlsx", ".xlsm", ".md", ".txt"):
-            with self.lock:
-                self.remove_file(filepath)
+        if not self.doc_factory.filter_file(filepath):
+            return
+
+        with self.lock:
+            self.remove_file(filepath)
 
     def __on_moved(self, event: FileSystemEvent):
         # TODO Implement folder and file renaming
@@ -215,9 +218,9 @@ class DocumentIndexer:
         self.__observer.start()
 
         logger.info(f"Started file watcher on: '{config.DOCS_PATH}'")
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            self.__observer.stop()
+        # try:
+        #     while True:
+        #         time.sleep(1)
+        # except KeyboardInterrupt:
+        #     self.__observer.stop()
         self.__observer.join()

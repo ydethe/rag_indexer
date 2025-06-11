@@ -16,6 +16,15 @@ class DocumentFactory(Singleton):
         self.__association = {}
         self.__embedding_model = None
 
+    def filter_file(self, path: Path) -> bool:
+        if path.suffix not in self.__association.keys():
+            return False
+
+        if path.stem.startswith(".sftpgo-upload"):
+            return False
+
+        return True
+
     def register(self, ext: str, cls: type):
         self.__association[ext] = cls
 
