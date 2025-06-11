@@ -221,4 +221,3 @@ class DocumentIndexer:
         except KeyboardInterrupt:
             self.__observer.stop()
         self.__observer.join()
-        
