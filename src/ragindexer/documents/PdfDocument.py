@@ -64,4 +64,7 @@ class PdfDocument(ADocument):
                 file_metadata["ocr_used"] = True
                 txt = ocr_pdf(path, k_page + 1)
 
+            if not txt:
+                continue
+
             yield txt, file_metadata

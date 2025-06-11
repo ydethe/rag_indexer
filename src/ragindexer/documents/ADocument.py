@@ -5,7 +5,6 @@ from typing import List, Tuple, Iterable
 from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
 
-from .. import logger
 from ..config import config
 from ..models import ChunkType, EmbeddingType
 
@@ -78,10 +77,6 @@ class ADocument(ABC):
     ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
         for text, file_metadata in self.iterate_raw_text():
             file_metadata["abspath"] = self.get_abs_path()
-
-            if not text:
-                logger.warning(f"No text extracted; skipping: '{self.get_abs_path()}'")
-                return [], [], file_metadata
 
             chunks, embeddings = self.__get_embeddings(text, embedding_model)
 
