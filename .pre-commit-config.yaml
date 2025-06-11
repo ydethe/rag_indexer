@@ -9,8 +9,8 @@ repos:
 
 - hooks:
   - id: uv-lock
-  - id: uv-export
-    args: ["--no-editable", "--no-emit-project"]
+  # - id: uv-export
+  #   args: ["--no-editable", "--no-emit-project"]
   repo: https://github.com/astral-sh/uv-pre-commit
   rev: 0.7.12
 
