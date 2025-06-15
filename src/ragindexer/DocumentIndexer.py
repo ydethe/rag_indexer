@@ -49,9 +49,6 @@ class DocumentIndexer:
         self.qdrant = QdrantIndexer(vector_size=self.vector_size)
         self.qdrant.create_collection_if_missing()
 
-        # Root folder to watch
-        self.root = config.DOCS_PATH
-
         # Lock around state & indexing operations
         self.lock = threading.Lock()
 
@@ -135,7 +132,9 @@ class DocumentIndexer:
         # 1. Build a set of all file paths on disk
         disk_files: list[Path] = []
         for ext in ("*.pdf", "*.docx", "*.xlsx", "*.xlsm", "*.md", "*.txt"):
-            disk_files.extend(self.root.rglob(ext))
+            disk_files.extend(config.DOCS_PATH.rglob(ext))
+        for ext in ("*.pdf", "*.docx", "*.xlsx", "*.xlsm", "*.md", "*.txt"):
+            disk_files.extend(config.EMAILS_PATH.rglob(ext))
         disk_files = [p.resolve() for p in disk_files]
 
         # 2. For each file on disk, check timestamp vs. state DB
@@ -213,14 +212,14 @@ class DocumentIndexer:
 
         # Files observer
         self.__docs_observer = Observer()
-        self.__docs_observer.schedule(event_handler, path=str(self.root), recursive=True)
+        self.__docs_observer.schedule(event_handler, path=str(config.DOCS_PATH), recursive=True)
         self.__docs_observer.start()
 
         logger.info(f"Started file watcher on: '{config.DOCS_PATH}'")
 
         # Emails observer
         self.__emails_observer = Observer()
-        self.__emails_observer.schedule(event_handler, path=str(self.root), recursive=True)
+        self.__emails_observer.schedule(event_handler, path=str(config.EMAILS_PATH), recursive=True)
         self.__emails_observer.start()
 
         logger.info(f"Started emails watcher on: '{config.EMAILS_PATH}'")
