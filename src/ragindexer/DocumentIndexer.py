@@ -75,9 +75,8 @@ class DocumentIndexer:
             filepath: Path to the file to be analyzed
 
         """
-        relpath = filepath.relative_to(config.DOCS_PATH)
         stat = os.path.getmtime(filepath)
-        stored = get_stored_timestamp(relpath)
+        stored = get_stored_timestamp(filepath)
         if stored is not None and stored == stat:
             # No change
             return
@@ -91,10 +90,10 @@ class DocumentIndexer:
             nb_emb += len(embeddings)
 
         # Update state DB
-        set_stored_timestamp(relpath, stat)
+        set_stored_timestamp(filepath, stat)
         logger.info(f"[INDEX] Upserted {nb_emb} vectors")
 
-    def remove_file(self, relpath: Path):
+    def remove_file(self, filepath: Path):
         """
         Delete all vectors whose payload.source == this file's absolute path.
         We identify by regenerating all chunk IDs for old state—but since we store
@@ -102,14 +101,14 @@ class DocumentIndexer:
         to remove associated chunk IDs. Simpler: query by payload.source in Qdrant.
 
         Args:
-            relpath: Path to the file to be analyzed, relative to DOCS_PATH
+            filepath: Path to the file to be analyzed, relative to DOCS_PATH
 
         """
-        logger.info(f"[DELETE] Removing file from index: '{relpath}'")
+        logger.info(f"[DELETE] Removing file from index: '{filepath}'")
 
         # Query Qdrant for all points with payload.source == abspath
         # filter_ = {"must": [{"key": "source", "match": {"value": abspath}}]}
-        filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=str(relpath)))])
+        filter_ = Filter(must=[FieldCondition(key="source", match=MatchValue(value=str(filepath)))])
 
         # Retrieve IDs matching that filter
         hits = self.qdrant.search(limit=1000, query_filter=filter_)
@@ -120,7 +119,7 @@ class DocumentIndexer:
             logger.info(f"[DELETE] Removed {len(ids_to_delete)} vectors")
 
         # Remove from state DB
-        delete_stored_file(relpath)
+        delete_stored_file(filepath)
 
     def initial_scan(self):
         """
@@ -140,8 +139,7 @@ class DocumentIndexer:
         # 2. For each file on disk, check timestamp vs. state DB
         files_to_index = []
         for file_path in disk_files:
-            relpath = file_path.relative_to(config.DOCS_PATH)
-            stored = get_stored_timestamp(relpath)
+            stored = get_stored_timestamp(file_path)
             modified = os.path.getmtime(str(file_path))
             if stored is None or stored != modified:
                 files_to_index.append(file_path)
@@ -149,9 +147,8 @@ class DocumentIndexer:
         # 3. For each modified file on disk, process its chunks
         tot_nb_files = len(files_to_index)
         for n_file, file_path in enumerate(files_to_index):
-            relpath = file_path.relative_to(config.DOCS_PATH)
-            logger.info(f"Initial indexation of {n_file}/{tot_nb_files} - '{relpath}'")
-            stored = get_stored_timestamp(relpath)
+            logger.info(f"Initial indexation of {n_file}/{tot_nb_files} - '{file_path}'")
+            stored = get_stored_timestamp(file_path)
             modified = os.path.getmtime(str(file_path))
             self.process_file(file_path)
 

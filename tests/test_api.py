@@ -66,6 +66,6 @@ class TestIngestWatch(unittest.TestCase):
 if __name__ == "__main__":
     a = TestIngestWatch()
 
-    a.test_config()
-    # a.test_main()
+    # a.test_config()
+    a.test_main()
     # a.test_embeding()

@@ -1,5 +1,4 @@
-# Stage 1: Build
-FROM python:3.13-slim AS builder
+FROM python:3.13-slim
 
 ARG LOGLEVEL
 ARG QDRANT_HOST
@@ -51,29 +50,16 @@ RUN apt update && apt install -y \
 
 WORKDIR /app
 
-RUN python3 -m venv venv --system-site-packages && \
-    ./venv/bin/python -m pip install --no-cache-dir -U torch --index-url https://download.pytorch.org/whl/cpu && \
-    find /app/venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
+RUN python -m pip install --no-cache-dir -U torch --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt .
-RUN ./venv/bin/python -m pip install --no-cache-dir -U -r requirements.txt && \
-    find /app/venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
+RUN python -m pip install --no-cache-dir -U -r requirements.txt
 
 COPY dist/*.whl .
-RUN ./venv/bin/python -m pip install --no-cache-dir *.whl && \
-    rm -f *.whl && \
-    find /app/venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
-
-# # Stage 2: Production
-# FROM python:3.13-slim
-
-# # Set the working directory
-# WORKDIR /app
-
-# # Copy only the necessary files from the build stage
-# COPY --from=builder /app /app
+RUN python -m pip install --no-cache-dir *.whl && \
+    rm -f *.whl
 
 # Expose the port the app will run on
 EXPOSE 7860
 
-CMD ["/app/venv/bin/python", "-m" , "ragindexer"]
+CMD ["python", "-m" , "ragindexer"]

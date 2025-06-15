@@ -11,8 +11,7 @@ from ..config import config
 
 
 def ocr_pdf(path: Path, k_page: int) -> List[str]:
-    relpath = path.relative_to(config.DOCS_PATH)
-    ocr_dir = config.STATE_DB_PATH.parent / "cache" / relpath.parent / (path.parts[-1] + ".ocr")
+    ocr_dir = config.STATE_DB_PATH.parent / "cache" / path.parent / (path.parts[-1] + ".ocr")
     ocr_dir.mkdir(parents=True, exist_ok=True)
 
     # Convert the page to an image

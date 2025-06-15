@@ -128,7 +128,6 @@ class QdrantIndexer:
 
         """
         filepath = file_metadata["abspath"]
-        relpath = filepath.relative_to(config.DOCS_PATH)
 
         points: list[PointStruct] = []
         # Use MD5 of path + chunk index as unique point ID
@@ -136,7 +135,7 @@ class QdrantIndexer:
             file_hash = hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest()
             pid = str(uuid.UUID(int=int(file_hash, 16)))
             payload = {
-                "source": str(relpath),
+                "source": str(filepath),
                 "chunk_index": idx,
                 "text": chunk,
                 "ocr_used": file_metadata.get("ocr_used", False),
