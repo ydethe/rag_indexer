@@ -217,7 +217,6 @@ class DocumentIndexer:
         self.__docs_observer.start()
 
         logger.info(f"Started file watcher on: '{config.DOCS_PATH}'")
-        self.__docs_observer.join()
 
         # Emails observer
         self.__emails_observer = Observer()
@@ -225,4 +224,6 @@ class DocumentIndexer:
         self.__emails_observer.start()
 
         logger.info(f"Started emails watcher on: '{config.EMAILS_PATH}'")
+
+        self.__docs_observer.join()
         self.__emails_observer.join()
