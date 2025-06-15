@@ -16,6 +16,7 @@ class Config(BaseSettings):
     QDRANT_API_KEY: str
     OPENAI_API_KEY: str
     DOCS_PATH: Path
+    EMAILS_PATH: Path
     STATE_DB_PATH: Path
     COLLECTION_NAME: str
     DAV_ROOT: str

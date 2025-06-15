@@ -211,14 +211,18 @@ class DocumentIndexer:
         event_handler.on_moved = self.__on_moved
         event_handler.on_deleted = self.__on_deleted
 
-        self.__observer = Observer()
-        self.__observer.schedule(event_handler, path=str(self.root), recursive=True)
-        self.__observer.start()
+        # Files observer
+        self.__docs_observer = Observer()
+        self.__docs_observer.schedule(event_handler, path=str(self.root), recursive=True)
+        self.__docs_observer.start()
 
         logger.info(f"Started file watcher on: '{config.DOCS_PATH}'")
-        # try:
-        #     while True:
-        #         time.sleep(1)
-        # except KeyboardInterrupt:
-        #     self.__observer.stop()
-        self.__observer.join()
+        self.__docs_observer.join()
+
+        # Emails observer
+        self.__emails_observer = Observer()
+        self.__emails_observer.schedule(event_handler, path=str(self.root), recursive=True)
+        self.__emails_observer.start()
+
+        logger.info(f"Started emails watcher on: '{config.EMAILS_PATH}'")
+        self.__emails_observer.join()

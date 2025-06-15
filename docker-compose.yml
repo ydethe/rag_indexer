@@ -32,6 +32,7 @@ services:
       - qdrant
     volumes:
       - /home/yann/johncloud_data/sftpgo/data/ydethe/Documents:/docs:ro
+      - /home/yann/johncloud_data/chatdoc/emails:/emails:ro
       - /home/yann/repos/ragindexer/.root:/code
     environment:
       - LOGLEVEL=$LOGLEVEL
