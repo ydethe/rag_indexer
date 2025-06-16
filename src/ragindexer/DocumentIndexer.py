@@ -40,6 +40,7 @@ class DocumentIndexer:
             config.EMBEDDING_MODEL,
             trust_remote_code=config.EMBEDDING_MODEL_TRUST_REMOTE_CODE,
             backend="torch",
+            cache_folder=config.STATE_DB_PATH.parent / "models",
         )
         self.vector_size = self.model.get_sentence_embedding_dimension()
         self.doc_factory = DocumentFactory()

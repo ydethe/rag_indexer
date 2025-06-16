@@ -79,5 +79,7 @@ class ADocument(ABC):
             file_metadata["abspath"] = self.get_abs_path()
 
             chunks, embeddings = self.__get_embeddings(text, embedding_model)
+            while "" in chunks:
+                chunks.remove("")
 
             yield chunks, embeddings, file_metadata

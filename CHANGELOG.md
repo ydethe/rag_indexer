@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Fixed pid computation ([0216b97](https://github.com/ydethe/ragindexer/commit/0216b97d30ade51500e57fa906eb5c2df716fe8e) by Yann de The).
+- Fixed pid computation ([e3840c1](https://github.com/ydethe/ragindexer/commit/e3840c16f5f9a94623924f6bcbb730f3850e9faf) by Yann de The).
 - Fixed OCR cache determination ([91dbc4d](https://github.com/ydethe/ragindexer/commit/91dbc4dfe0972f2483e0b48f4ea10dfc14c42706) by Yann de The).
 - Fixed qdrant hostname ([def96ad](https://github.com/ydethe/ragindexer/commit/def96ad7d8ce11dc8d62e911e6c7cd68251388a4) by Yann de The).
 - Fixed NLTK downloads ([10e1dae](https://github.com/ydethe/ragindexer/commit/10e1daef293c042512a0b4b43514aadb9dbfff4a) by Yann de The).
