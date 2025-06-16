@@ -1,5 +1,4 @@
 from typing import Optional, List, Sequence, Union
-import hashlib
 import uuid
 
 from qdrant_client.conversions import common_types as types
@@ -91,19 +90,6 @@ class QdrantIndexer:
                 f"Created Qdrant collection '{config.COLLECTION_NAME}' (size={self.vector_size})."
             )
 
-    def upsert(self, points: List[PointStruct]):
-        """
-        Update or insert a new point into the collection.
-
-        If point with given ID already exists - it will be overwritten.
-
-        Args:
-            points (Point): Batch or list of points to insert
-
-        """
-        if points:
-            self.__client.upsert(collection_name=config.COLLECTION_NAME, points=points)
-
     def delete(self, ids: List[str]):
         """Deletes selected points from collection
 
@@ -132,8 +118,9 @@ class QdrantIndexer:
         points: list[PointStruct] = []
         # Use MD5 of path + chunk index as unique point ID
         for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
-            file_hash = hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest()
-            pid = str(uuid.UUID(int=int(file_hash, 16)))
+            # file_hash = hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest()
+            # pid = str(uuid.UUID(int=int(file_hash, 16)))
+            pid = str(uuid.uuid4())
             payload = {
                 "source": str(filepath),
                 "chunk_index": idx,
@@ -143,4 +130,4 @@ class QdrantIndexer:
             points.append(PointStruct(id=pid, vector=emb, payload=payload))
 
         # Upsert into Qdrant
-        self.upsert(points)
+        self.__client.upsert(collection_name=config.COLLECTION_NAME, points=points)
