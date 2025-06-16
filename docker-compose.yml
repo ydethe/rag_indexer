@@ -2,28 +2,28 @@ services:
   qdrant:
     image: qdrant/qdrant:latest
     restart: unless-stopped
-    # ports:
-    #   - "6333:6333"    # Qdrant API
-    # environment:
-    #   - QDRANT__SERVICE__API_KEY=$QDRANT__SERVICE__API_KEY
-    #   - QDRANT__SERVICE__READ_ONLY_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
+    ports:
+      - "6333:6333"    # Qdrant API
+    environment:
+      - QDRANT__SERVICE__API_KEY=$QDRANT__SERVICE__API_KEY
+      - QDRANT__SERVICE__READ_ONLY_API_KEY=$QDRANT__SERVICE__READ_ONLY_API_KEY
     volumes:
       - $JOHNCLOUD_ROOT/$COMPOSE_PROJECT_NAME/qdrant_data:/qdrant/storage
-    labels:
-      - "traefik.enable=true"
+  #   labels:
+  #     - "traefik.enable=true"
 
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
-      - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.rule=Host(`qdrant.$HOST`)"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.entrypoints=websecure"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.tls.certresolver=letsencrypt"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.middlewares=forward-auth-verify"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME-qdrant.service=$COMPOSE_PROJECT_NAME-qdrant"
+  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME-qdrant.loadbalancer.server.port=6333"
 
-      - "homepage.group=$HOME_GROUP"
-      - "homepage.name=$HOME_NAME - Qdrant"
-      - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
-      - "homepage.href=https://qdrant.$HOST/dashboard"
-      - "homepage.description=$HOME_DESCRIPTION"
+  #     - "homepage.group=$HOME_GROUP"
+  #     - "homepage.name=$HOME_NAME - Qdrant"
+  #     - "homepage.icon=https://avatars.githubusercontent.com/u/73504361"
+  #     - "homepage.href=https://qdrant.$HOST/dashboard"
+  #     - "homepage.description=$HOME_DESCRIPTION"
 
   ragindexer:
     build: .
@@ -36,14 +36,15 @@ services:
       - /home/yann/repos/ragindexer/.root:/code
     environment:
       - LOGLEVEL=$LOGLEVEL
-      - QDRANT_HOST=$QDRANT_HOST
-      - QDRANT_HTTPS=$QDRANT_HTTPS
-      - QDRANT_PORT=$QDRANT_PORT
+      - QDRANT_HOST=$COMPOSE_PROJECT_NAME-qdrant-1
+      - QDRANT_HTTPS=false
+      - QDRANT_PORT=6333
       - QDRANT_QUERY_LIMIT=$QDRANT_QUERY_LIMIT
-      - QDRANT_API_KEY=$QDRANT_API_KEY
+      - QDRANT_API_KEY=$QDRANT__SERVICE__API_KEY
       - OPENAI_API_KEY=$OPENAI_API_KEY
-      - DOCS_PATH=$DOCS_PATH
-      - STATE_DB_PATH=$STATE_DB_PATH
+      - DOCS_PATH=/docs
+      - EMAILS_PATH=/emails
+      - STATE_DB_PATH=/code/index_state.db
       - COLLECTION_NAME=$COLLECTION_NAME
       - DAV_ROOT=$DAV_ROOT
       - EMBEDDING_MODEL=$EMBEDDING_MODEL
@@ -54,39 +55,39 @@ services:
       - OCR_LANG=$OCR_LANG
       - TORCH_NUM_THREADS=$TORCH_NUM_THREADS
 
-  ragwebui:
-    image: ydethe/ragwebui:latest
-    restart: unless-stopped
-    depends_on:
-      - qdrant
-    environment:
-      - LOGLEVEL=$LOGLEVEL
-      - QDRANT_HOST=$QDRANT_HOST
-      - QDRANT_HTTPS=$QDRANT_HTTPS
-      - QDRANT_PORT=$QDRANT_PORT
-      - QDRANT_QUERY_LIMIT=$QDRANT_QUERY_LIMIT
-      - OPENAI_API_KEY=$OPENAI_API_KEY
-      - COLLECTION_NAME=$COLLECTION_NAME
-      - DAV_ROOT=$DAV_ROOT
-      - EMBEDDING_MODEL=$EMBEDDING_MODEL
-      - EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
-      - OPEN_MODEL_PREF=$OPEN_MODEL_PREF
-      - TORCH_NUM_THREADS=$TORCH_NUM_THREADS
-    labels:
-      - "traefik.enable=true"
+  # ragwebui:
+  #   image: ydethe/ragwebui:latest
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - qdrant
+  #   environment:
+  #     - LOGLEVEL=$LOGLEVEL
+  #     - QDRANT_HOST=$QDRANT_HOST
+  #     - QDRANT_HTTPS=$QDRANT_HTTPS
+  #     - QDRANT_PORT=$QDRANT_PORT
+  #     - QDRANT_QUERY_LIMIT=$QDRANT_QUERY_LIMIT
+  #     - OPENAI_API_KEY=$OPENAI_API_KEY
+  #     - COLLECTION_NAME=$COLLECTION_NAME
+  #     - DAV_ROOT=$DAV_ROOT
+  #     - EMBEDDING_MODEL=$EMBEDDING_MODEL
+  #     - EMBEDDING_MODEL_TRUST_REMOTE_CODE=$EMBEDDING_MODEL_TRUST_REMOTE_CODE
+  #     - OPEN_MODEL_PREF=$OPEN_MODEL_PREF
+  #     - TORCH_NUM_THREADS=$TORCH_NUM_THREADS
+  #   labels:
+  #     - "traefik.enable=true"
 
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.service=$COMPOSE_PROJECT_NAME"
-      - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=7860"
-      - "traefik.http.routers.$COMPOSE_PROJECT_NAME.middlewares=forward-auth-verify"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.rule=Host(`$HOST`)"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.entrypoints=websecure"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.tls.certresolver=letsencrypt"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.service=$COMPOSE_PROJECT_NAME"
+  #     - "traefik.http.services.$COMPOSE_PROJECT_NAME.loadbalancer.server.port=7860"
+  #     - "traefik.http.routers.$COMPOSE_PROJECT_NAME.middlewares=forward-auth-verify"
 
-      - "homepage.group=$HOME_GROUP"
-      - "homepage.name=$HOME_NAME"
-      - "homepage.icon=$HOME_ICON"
-      - "homepage.href=https://$HOST"
-      - "homepage.description=$HOME_DESCRIPTION"
+  #     - "homepage.group=$HOME_GROUP"
+  #     - "homepage.name=$HOME_NAME"
+  #     - "homepage.icon=$HOME_ICON"
+  #     - "homepage.href=https://$HOST"
+  #     - "homepage.description=$HOME_DESCRIPTION"
 
 networks:
   default:

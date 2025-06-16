@@ -35,6 +35,16 @@ def ocr_pdf(path: Path, k_page: int) -> List[str]:
 
 
 class PdfDocument(ADocument):
+    def __init__(self, abspath):
+        super().__init__(abspath)
+
+        ocr_dir = (
+            config.STATE_DB_PATH.parent / "cache" / abspath.parent / (abspath.parts[-1] + ".ocr")
+        )
+
+        if ocr_dir.exists():
+            logger.info(f"Reusing OCR cache for {abspath}")
+
     def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
         path = self.get_abs_path()
         try:
