@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Added logging msg to tell if OCR cache is reused ([cf86185](https://github.com/ydethe/ragindexer/commit/cf86185cfb3007e7c467b471282629d6b77e1e56) by Yann de The).
+- Added logging msg to tell if OCR cache is reused ([168a97d](https://github.com/ydethe/ragindexer/commit/168a97d020fb14ecb668bf2cbf0b6828f34c6e59) by Yann de The).
 - Added emails watcher ([9de852c](https://github.com/ydethe/ragindexer/commit/9de852c33850ac3076924e2bf2abe370cdb609fc) by Yann de The).
 - Added emails observer ([511da4a](https://github.com/ydethe/ragindexer/commit/511da4ad52cce5a7c21ebe0b26cc961658565be2) by Yann de The).
 - Added API keys and remove of deprecated method QdrantClient.search ([12d727f](https://github.com/ydethe/ragindexer/commit/12d727f8c96d018c1ca1d803222664a7ca528fca) by Yann de The).

@@ -36,7 +36,7 @@ services:
       - /home/yann/repos/ragindexer/.root:/code
     environment:
       - LOGLEVEL=$LOGLEVEL
-      - QDRANT_HOST=$COMPOSE_PROJECT_NAME-qdrant-1
+      - QDRANT_HOST=qdrant
       - QDRANT_HTTPS=false
       - QDRANT_PORT=6333
       - QDRANT_QUERY_LIMIT=$QDRANT_QUERY_LIMIT
