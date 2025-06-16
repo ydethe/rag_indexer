@@ -7,7 +7,7 @@ from .ADocument import ADocument
 
 
 class XlsDocument(ADocument):
-    def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
+    def iterate_raw_text(self) -> Iterable[Tuple[int, str, dict]]:
         try:
             wb = openpyxl.load_workbook(self.get_abs_path(), read_only=True, data_only=True)
         except Exception:
@@ -28,4 +28,4 @@ class XlsDocument(ADocument):
                 row_text = [str(cell) for cell in row if cell is not None]
                 if row_text:
                     all_text.append(" ".join(row_text))
-            yield "\n".join(all_text).strip(), {"ocr_used": False}
+            yield k_sheet, "\n".join(all_text).strip(), {"ocr_used": False}

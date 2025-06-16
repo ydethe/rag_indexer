@@ -36,12 +36,12 @@ class DocumentFactory(Singleton):
 
     def processDocument(
         self, abspath: Path
-    ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
+    ) -> Iterable[Tuple[int, List[ChunkType], List[EmbeddingType], dict]]:
         ext = abspath.suffix
         cls = self.getBuild(ext)
         doc: ADocument = cls(abspath)
-        for chunks, embeddings, file_metadata in doc.process(self.__embedding_model):
-            yield chunks, embeddings, file_metadata
+        for k_page, chunks, embeddings, file_metadata in doc.process(self.__embedding_model):
+            yield k_page, chunks, embeddings, file_metadata
 
 
 DocumentFactory().register(".doc", DocDocument)

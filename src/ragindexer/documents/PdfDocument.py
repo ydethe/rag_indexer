@@ -93,4 +93,4 @@ class PdfDocument(ADocument):
             if txt is None or txt == "":
                 continue
 
-            yield txt, file_metadata
+            yield k_page, txt, file_metadata

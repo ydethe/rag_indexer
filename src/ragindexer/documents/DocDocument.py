@@ -23,4 +23,4 @@ class DocDocument(ADocument):
                 logger.info(f"Lecture page {k_page+1}/{page_count}")
                 avct = new_avct
 
-            yield "\n".join(p.text).strip(), {"ocr_used": False}
+            yield k_page, "\n".join(p.text).strip(), {"ocr_used": False}

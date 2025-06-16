@@ -55,7 +55,7 @@ class DocumentIndexer:
 
     def extract_text(
         self, abspath: Path
-    ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
+    ) -> Iterable[Tuple[int, List[ChunkType], List[EmbeddingType], dict]]:
         """Extract chunks, embeddings and metadata from file path
 
         Args:
@@ -65,8 +65,8 @@ class DocumentIndexer:
             A tuple with a list of chunks, the corresponding list of embeddings, and the file metadata
 
         """
-        for chunks, embeddings, file_metadata in self.doc_factory.processDocument(abspath):
-            yield chunks, embeddings, file_metadata
+        for k_page, chunks, embeddings, file_metadata in self.doc_factory.processDocument(abspath):
+            yield k_page, chunks, embeddings, file_metadata
 
     def process_file(self, filepath: Path):
         """
@@ -85,9 +85,9 @@ class DocumentIndexer:
         logger.info(72 * "=")
         logger.info(f"[INDEX] Processing changed file: '{filepath}'")
         nb_emb = 0
-        for chunks, embeddings, file_metadata in self.extract_text(filepath):
+        for k_page, chunks, embeddings, file_metadata in self.extract_text(filepath):
             # Upsert into Qdrant
-            self.qdrant.record_embeddings(chunks, embeddings, file_metadata)
+            self.qdrant.record_embeddings(k_page, chunks, embeddings, file_metadata)
             nb_emb += len(embeddings)
 
         # Update state DB

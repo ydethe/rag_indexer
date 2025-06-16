@@ -32,7 +32,7 @@ class ADocument(ABC):
         return self.__abspath
 
     @abstractmethod
-    def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
+    def iterate_raw_text(self) -> Iterable[Tuple[int, str, dict]]:
         """
         Abstract method that should implement the concrete way to handle the file.
 
@@ -74,12 +74,12 @@ class ADocument(ABC):
 
     def process(
         self, embedding_model: SentenceTransformer
-    ) -> Iterable[Tuple[List[ChunkType], List[EmbeddingType], dict]]:
-        for text, file_metadata in self.iterate_raw_text():
+    ) -> Iterable[Tuple[int, List[ChunkType], List[EmbeddingType], dict]]:
+        for k_page, text, file_metadata in self.iterate_raw_text():
             file_metadata["abspath"] = self.get_abs_path()
 
             chunks, embeddings = self.__get_embeddings(text, embedding_model)
             while "" in chunks:
                 chunks.remove("")
 
-            yield chunks, embeddings, file_metadata
+            yield k_page, chunks, embeddings, file_metadata

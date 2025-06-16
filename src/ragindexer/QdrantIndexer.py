@@ -1,3 +1,4 @@
+import hashlib
 import time
 from typing import Optional, List, Sequence, Union
 import uuid
@@ -103,7 +104,11 @@ class QdrantIndexer:
             self.__client.delete(collection_name=config.COLLECTION_NAME, points_selector=pil)
 
     def record_embeddings(
-        self, chunks: List[ChunkType], embeddings: List[EmbeddingType], file_metadata: dict
+        self,
+        k_page: int,
+        chunks: List[ChunkType],
+        embeddings: List[EmbeddingType],
+        file_metadata: dict,
     ):
         """
         Update or insert a new chunk into the collection.
@@ -119,13 +124,13 @@ class QdrantIndexer:
         points: list[PointStruct] = []
         # Use MD5 of path + chunk index as unique point ID
         for idx, (chunk, emb) in enumerate(zip(chunks, embeddings)):
-            # file_hash = hashlib.md5(f"{filepath}::{idx}".encode("utf-8")).hexdigest()
-            # pid = str(uuid.UUID(int=int(file_hash, 16)))
-            pid = str(uuid.uuid4())
+            file_hash = hashlib.md5(f"{filepath}::{k_page}::{idx}".encode("utf-8")).hexdigest()
+            pid = str(uuid.UUID(int=int(file_hash, 16)))
             payload = {
                 "source": str(filepath),
                 "chunk_index": idx,
                 "text": chunk,
+                "page": k_page,
                 "ocr_used": file_metadata.get("ocr_used", False),
             }
             points.append(PointStruct(id=pid, vector=emb, payload=payload))
