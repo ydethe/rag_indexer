@@ -10,8 +10,7 @@ from .ADocument import ADocument
 from ..config import config
 
 
-def ocr_pdf(path: Path, k_page: int) -> List[str]:
-    ocr_dir = config.STATE_DB_PATH.parent / "cache" / path.parent / (path.parts[-1] + ".ocr")
+def ocr_pdf(path: Path, k_page: int, ocr_dir: Path) -> List[str]:
     ocr_dir.mkdir(parents=True, exist_ok=True)
 
     # Convert the page to an image
@@ -38,12 +37,14 @@ class PdfDocument(ADocument):
     def __init__(self, abspath):
         super().__init__(abspath)
 
-        ocr_dir = (
+        self.ocr_dir = (
             config.STATE_DB_PATH.parent / "cache" / abspath.parent / (abspath.parts[-1] + ".ocr")
         )
 
-        if ocr_dir.exists():
+        if self.ocr_dir.exists():
             logger.info(f"Reusing OCR cache for {abspath}")
+
+        self.using_ocr = False
 
     def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
         path = self.get_abs_path()
@@ -71,7 +72,11 @@ class PdfDocument(ADocument):
 
             if len(txt) < 10:
                 file_metadata["ocr_used"] = True
-                txt = ocr_pdf(path, k_page + 1)
+                txt = ocr_pdf(path, k_page + 1, self.ocr_dir)
+
+                if not self.using_ocr:
+                    self.using_ocr = True
+                    logger.info(f"Using OCR for '{self.get_abs_path()}' in '{self.ocr_dir}")
 
             if not txt:
                 continue
