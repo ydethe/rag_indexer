@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed qdrant hostname ([def96ad](https://github.com/ydethe/ragindexer/commit/def96ad7d8ce11dc8d62e911e6c7cd68251388a4) by Yann de The).
 - Fixed NLTK downloads ([10e1dae](https://github.com/ydethe/ragindexer/commit/10e1daef293c042512a0b4b43514aadb9dbfff4a) by Yann de The).
 - Fixed bug where a whole pdf file is skipped if one page has no text ([301e5eb](https://github.com/ydethe/ragindexer/commit/301e5eb7db159b4ca5a69fce8c26c5fc21224ed9) by Yann de The).
 - Fixed image name ([eadcf30](https://github.com/ydethe/ragindexer/commit/eadcf3044c877e6b9cd01b20ab3a3bb7204e509f) by Yann de The).

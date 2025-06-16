@@ -24,11 +24,11 @@ def ocr_pdf(path: Path, k_page: int, ocr_dir: Path) -> List[str]:
 
         try:
             txt = pytesseract.image_to_string(img, lang=config.OCR_LANG)
+            with open(ocr_txt, "w") as f:
+                f.write(txt)
         except Exception as e:
             logger.error(f"OCR failed : {e}")
-            txt = ""
-        with open(ocr_txt, "w") as f:
-            f.write(txt)
+            txt = None
 
     return txt
 
@@ -37,9 +37,20 @@ class PdfDocument(ADocument):
     def __init__(self, abspath):
         super().__init__(abspath)
 
-        self.ocr_dir = (
-            config.STATE_DB_PATH.parent / "cache" / abspath.parent / (abspath.parts[-1] + ".ocr")
-        )
+        if abspath.parts[0] == "/":
+            self.ocr_dir = (
+                config.STATE_DB_PATH.parent
+                / "cache"
+                / abspath.parent.relative_to("/")
+                / (abspath.parts[-1] + ".ocr")
+            )
+        else:
+            self.ocr_dir = (
+                config.STATE_DB_PATH.parent
+                / "cache"
+                / abspath.parent
+                / (abspath.parts[-1] + ".ocr")
+            )
 
         if self.ocr_dir.exists():
             logger.info(f"Reusing OCR cache for {abspath}")
@@ -70,13 +81,13 @@ class PdfDocument(ADocument):
                 logger.error(f"While extracting text: {e}")
                 txt = ""
 
-            if len(txt) < 10:
-                file_metadata["ocr_used"] = True
-                txt = ocr_pdf(path, k_page + 1, self.ocr_dir)
-
+            if len(txt) < 10 or True:
                 if not self.using_ocr:
                     self.using_ocr = True
                     logger.info(f"Using OCR for '{self.get_abs_path()}' in '{self.ocr_dir}")
+
+                file_metadata["ocr_used"] = True
+                txt = ocr_pdf(path, k_page + 1, self.ocr_dir)
 
             if not txt:
                 continue
