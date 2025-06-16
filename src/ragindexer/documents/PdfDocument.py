@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, List, Tuple
+from typing import Iterable, Tuple
 
 import pytesseract
 from pdf2image import convert_from_path
@@ -10,7 +10,7 @@ from .ADocument import ADocument
 from ..config import config
 
 
-def ocr_pdf(path: Path, k_page: int, ocr_dir: Path) -> List[str]:
+def ocr_pdf(path: Path, k_page: int, ocr_dir: Path) -> str:
     ocr_dir.mkdir(parents=True, exist_ok=True)
 
     # Convert the page to an image
@@ -53,9 +53,10 @@ class PdfDocument(ADocument):
             )
 
         if self.ocr_dir.exists():
-            logger.info(f"Reusing OCR cache for {abspath}")
-
-        self.using_ocr = False
+            logger.info(f"Reusing OCR cache for {self.ocr_dir}")
+            self.using_ocr = True
+        else:
+            self.using_ocr = False
 
     def iterate_raw_text(self) -> Iterable[Tuple[str, dict]]:
         path = self.get_abs_path()
@@ -81,7 +82,7 @@ class PdfDocument(ADocument):
                 logger.error(f"While extracting text: {e}")
                 txt = ""
 
-            if len(txt) < 10 or True:
+            if len(txt) < 10:
                 if not self.using_ocr:
                     self.using_ocr = True
                     logger.info(f"Using OCR for '{self.get_abs_path()}' in '{self.ocr_dir}")

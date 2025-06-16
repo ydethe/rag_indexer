@@ -1,3 +1,4 @@
+import time
 from typing import Optional, List, Sequence, Union
 import uuid
 
@@ -131,3 +132,4 @@ class QdrantIndexer:
 
         # Upsert into Qdrant
         self.__client.upsert(collection_name=config.COLLECTION_NAME, points=points)
+        time.sleep(0.1)
