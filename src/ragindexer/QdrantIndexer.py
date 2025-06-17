@@ -27,14 +27,13 @@ class QdrantIndexer:
     """
 
     def __init__(self, vector_size: int):
-        self.__client = QdrantClient(
-            host=config.QDRANT_HOST,
-            port=config.QDRANT_PORT,
-            api_key=config.QDRANT_API_KEY,
-            https=config.QDRANT_HTTPS,
-        )
-
+        self.__client = QdrantClient(url=config.QDRANT_URL, api_key=config.QDRANT_API_KEY)
         self.vector_size = vector_size
+        self.__create_collection_if_missing()
+
+    def info(self) -> types.CollectionInfo:
+        info = self.__client.get_collection(collection_name=config.COLLECTION_NAME)
+        return info
 
     def search(
         self,
@@ -79,18 +78,17 @@ class QdrantIndexer:
         ).points
         return hits
 
-    def create_collection_if_missing(self):
+    def __create_collection_if_missing(self):
         """Creates the collection provided in the COLLECTION_NAME environment variable, if not already created"""
         existing = [c.name for c in self.__client.get_collections().collections]
         if config.COLLECTION_NAME not in existing:
+            logger.info(f"Creating Qdrant collection : '{config.COLLECTION_NAME}'...")
             self.__client.recreate_collection(
                 collection_name=config.COLLECTION_NAME,
                 vectors_config=VectorParams(size=self.vector_size, distance=Distance.COSINE),
                 on_disk_payload=True,
             )
-            logger.info(
-                f"Created Qdrant collection '{config.COLLECTION_NAME}' (size={self.vector_size})."
-            )
+            logger.info("... Done")
 
     def delete(self, ids: List[str]):
         """Deletes selected points from collection

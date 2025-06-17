@@ -9,9 +9,7 @@ class Config(BaseSettings):
     )
 
     LOGLEVEL: str
-    QDRANT_HOST: str
-    QDRANT_HTTPS: bool
-    QDRANT_PORT: int
+    QDRANT_URL: str
     QDRANT_QUERY_LIMIT: int
     QDRANT_API_KEY: str
     OPENAI_API_KEY: str

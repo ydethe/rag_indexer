@@ -3,6 +3,7 @@ import unittest
 
 from sentence_transformers import SentenceTransformer
 import torch.nn.functional as F
+from qdrant_client.models import CollectionStatus
 
 from ragindexer.config import config
 from ragindexer.DocumentIndexer import DocumentIndexer
@@ -11,6 +12,11 @@ from ragindexer.__main__ import main
 
 
 class TestIngestWatch(unittest.TestCase):
+    def test_qrant_connection(self):
+        qdrant = QdrantIndexer(384)
+        info = qdrant.info()
+        self.assertEqual(info.status, CollectionStatus.GREEN)
+
     def test_config(self):
         qdrant = QdrantIndexer(384)
         hits = qdrant.search()
@@ -72,9 +78,11 @@ class TestIngestWatch(unittest.TestCase):
 if __name__ == "__main__":
     a = TestIngestWatch()
 
+    a.test_qrant_connection()
     # a.test_config()
-    a.test_one_doc(
-        Path("/home/yann/johncloud_data/sftpgo/data/ydethe/Documents/Camille/BD Camille.pdf")
-    )
+    # Test with '/docs/Technique/Doc 3D/AST.pdf'
+    # a.test_one_doc(
+    #     Path("/home/yann/johncloud_data/sftpgo/data/ydethe/Documents/Camille/BD Camille.pdf")
+    # )
     # a.test_main()
     # a.test_embeding()

@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed Exception raised when no text read ([88c078f](https://github.com/ydethe/ragindexer/commit/88c078f4f708ef90ec31a8169858d13bef75bd77) by Yann de The).
 - Fixed empty chunks ([a72e49a](https://github.com/ydethe/ragindexer/commit/a72e49a4ea0873e01336aaf7bc2f98999fd3475c) by Yann de The).
 - Fixed pid computation ([e3840c1](https://github.com/ydethe/ragindexer/commit/e3840c16f5f9a94623924f6bcbb730f3850e9faf) by Yann de The).
 - Fixed OCR cache determination ([91dbc4d](https://github.com/ydethe/ragindexer/commit/91dbc4dfe0972f2483e0b48f4ea10dfc14c42706) by Yann de The).

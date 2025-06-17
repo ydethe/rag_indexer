@@ -48,7 +48,6 @@ class DocumentIndexer:
 
         # Initialize Qdrant
         self.qdrant = QdrantIndexer(vector_size=self.vector_size)
-        self.qdrant.create_collection_if_missing()
 
         # Lock around state & indexing operations
         self.lock = threading.Lock()
