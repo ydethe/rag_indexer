@@ -1,9 +1,11 @@
+from pathlib import Path
 import unittest
 
 from sentence_transformers import SentenceTransformer
 import torch.nn.functional as F
 
 from ragindexer.config import config
+from ragindexer.DocumentIndexer import DocumentIndexer
 from ragindexer.QdrantIndexer import QdrantIndexer
 from ragindexer.__main__ import main
 
@@ -13,6 +15,10 @@ class TestIngestWatch(unittest.TestCase):
         qdrant = QdrantIndexer(384)
         hits = qdrant.search()
         print(hits[0])
+
+    def test_one_doc(self, abspath: Path):
+        doc_index = DocumentIndexer()
+        doc_index.process_file(abspath, force=True)
 
     def test_main(self):
         main()
@@ -67,5 +73,8 @@ if __name__ == "__main__":
     a = TestIngestWatch()
 
     # a.test_config()
-    a.test_main()
+    a.test_one_doc(
+        Path("/home/yann/johncloud_data/sftpgo/data/ydethe/Documents/Camille/BD Camille.pdf")
+    )
+    # a.test_main()
     # a.test_embeding()

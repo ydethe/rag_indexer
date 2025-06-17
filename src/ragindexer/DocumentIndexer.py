@@ -68,17 +68,18 @@ class DocumentIndexer:
         for k_page, chunks, embeddings, file_metadata in self.doc_factory.processDocument(abspath):
             yield k_page, chunks, embeddings, file_metadata
 
-    def process_file(self, filepath: Path):
+    def process_file(self, filepath: Path, force: bool = False):
         """
         Extract text, chunk, embed, and upsert into Qdrant.
 
         Args:
             filepath: Path to the file to be analyzed
+            force: True to process the file even if the database says that it has already been processed
 
         """
         stat = os.path.getmtime(filepath)
         stored = get_stored_timestamp(filepath)
-        if stored is not None and stored == stat:
+        if (stored is not None and stored == stat) and not force:
             # No change
             return
 

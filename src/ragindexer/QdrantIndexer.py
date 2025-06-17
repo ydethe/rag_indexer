@@ -136,5 +136,6 @@ class QdrantIndexer:
             points.append(PointStruct(id=pid, vector=emb, payload=payload))
 
         # Upsert into Qdrant
-        self.__client.upsert(collection_name=config.COLLECTION_NAME, points=points)
-        time.sleep(0.1)
+        if len(points) > 0:
+            self.__client.upsert(collection_name=config.COLLECTION_NAME, points=points)
+            time.sleep(0.1)
