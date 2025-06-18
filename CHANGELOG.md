@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added github pages publication ([3fb26fb](https://github.com/ydethe/ragindexer/commit/3fb26fb240d07ec595caa6a4a9f297ea93514dc8) by Yann de The).
 - Added MIN_EXPECTED_CHAR env var ([c5011fc](https://github.com/ydethe/ragindexer/commit/c5011fc759b4aaddadb40d7e2135e5e2a11f438c) by Yann de The).
 - Added test documents ([9dc3019](https://github.com/ydethe/ragindexer/commit/9dc30199f450f5879a9a42cfcf65613d380b8344) by Yann de The).
 - Added logging msg to tell if OCR cache is reused ([168a97d](https://github.com/ydethe/ragindexer/commit/168a97d020fb14ecb668bf2cbf0b6828f34c6e59) by Yann de The).

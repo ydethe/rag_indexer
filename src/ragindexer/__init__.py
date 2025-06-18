@@ -2,10 +2,6 @@
 
 .. include:: ../../README.md
 
-# CLI usage
-
-ragindexer comes with a CLI tool called ragindexer.
-
 # Testing
 
 ## Run the tests
