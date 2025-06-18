@@ -53,6 +53,7 @@ jobs:
           DAV_ROOT: https://webdav.domain.tld
           EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
           EMBEDDING_MODEL_TRUST_REMOTE_CODE: false
+          MIN_EXPECTED_CHAR: 100
           CHUNK_SIZE: 400
           CHUNK_OVERLAP: 80
           OCR_LANG: "fra+eng"
