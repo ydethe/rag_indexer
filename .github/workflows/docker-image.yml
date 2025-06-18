@@ -48,7 +48,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAPI_API_KEY }}
           DOCS_PATH: tests/inputs/docs
           EMAILS_PATH: tests/inputs/emails
-          STATE_DB_PATH: index_state.db
+          STATE_DB_PATH: .data/index_state.db
           COLLECTION_NAME: test
           DAV_ROOT: https://webdav.domain.tld
           EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
