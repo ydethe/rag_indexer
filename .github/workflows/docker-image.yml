@@ -1,10 +1,10 @@
 name: Docker Image CI
 
-on: push
-# on:
-#   push:
-#     tags:
-#       - '**'
+# on: push
+on:
+  push:
+    tags:
+      - '**'
 
 jobs:
   build_wheel:
