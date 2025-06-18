@@ -82,7 +82,7 @@ class PdfDocument(ADocument):
                 logger.error(f"While extracting text: {e}")
                 txt = ""
 
-            if len(txt) < 100:
+            if len(txt) < config.MIN_EXPECTED_CHAR:
                 if not self.using_ocr:
                     self.using_ocr = True
                     logger.info(f"Using OCR for '{self.get_abs_path()}' in '{self.ocr_dir}")
