@@ -21,6 +21,9 @@ jobs:
           - 6333:6333
 
     steps:
+      - name: Install packages
+        run: sudo apt install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-fra poppler-utils libgl1 fonts-freefont-ttf
+
       - name: Check out the repo
         uses: actions/checkout@v4
 
