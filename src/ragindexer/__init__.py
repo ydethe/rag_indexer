@@ -27,7 +27,7 @@ To run tests, just run:
 import sys
 import logging
 
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger.json import JsonFormatter
 
 from .config import config
 
@@ -40,7 +40,7 @@ logger.setLevel(config.LOGLEVEL.upper())
 logHandler = logging.StreamHandler(sys.stdout)
 
 # JSON formatter
-formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s")
+formatter = JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s")
 
 logHandler.setFormatter(formatter)
 logger.addHandler(logHandler)

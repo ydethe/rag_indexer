@@ -122,7 +122,7 @@ class DocumentIndexer:
         # Remove from state DB
         delete_stored_file(filepath)
 
-    def initial_scan(self):
+    def initial_scan(self) -> int:
         """
         On startup, walk entire DOCS_PATH and index any new/modified files.
         Also, find any entries in state DB that no longer exist on disk, and remove them.
@@ -159,6 +159,8 @@ class DocumentIndexer:
             if not abspath.exists():
                 # Remove from Qdrant
                 self.remove_file(relpath)
+
+        return tot_nb_files
 
     def __on_created_or_modified(self, event: FileSystemEvent):
         if event.is_directory:

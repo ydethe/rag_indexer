@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added test documents ([9dc3019](https://github.com/ydethe/ragindexer/commit/9dc30199f450f5879a9a42cfcf65613d380b8344) by Yann de The).
 - Added logging msg to tell if OCR cache is reused ([168a97d](https://github.com/ydethe/ragindexer/commit/168a97d020fb14ecb668bf2cbf0b6828f34c6e59) by Yann de The).
 - Added emails watcher ([9de852c](https://github.com/ydethe/ragindexer/commit/9de852c33850ac3076924e2bf2abe370cdb609fc) by Yann de The).
 - Added emails observer ([511da4a](https://github.com/ydethe/ragindexer/commit/511da4ad52cce5a7c21ebe0b26cc961658565be2) by Yann de The).

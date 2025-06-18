@@ -1,6 +1,7 @@
 .root
 migrations
 .gradio
+htmldoc
 *.db
 *.bak
 venv

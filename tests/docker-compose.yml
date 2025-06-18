@@ -1,0 +1,8 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    environment:
+      QDRANT__SERVICE__API_KEY: $QDRANT__SERVICE__API_KEY
+      QDRANT__SERVICE__READ_ONLY_API_KEY: $QDRANT__SERVICE__READ_ONLY_API_KEY
+    ports:
+      - 6333:6333

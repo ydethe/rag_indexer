@@ -7,27 +7,18 @@ from qdrant_client.models import CollectionStatus
 
 from ragindexer.config import config
 from ragindexer.DocumentIndexer import DocumentIndexer
-from ragindexer.QdrantIndexer import QdrantIndexer
 from ragindexer.__main__ import main
 
 
 class TestIngestWatch(unittest.TestCase):
     def test_qrant_connection(self):
-        qdrant = QdrantIndexer(384)
-        info = qdrant.info()
+        doc_index = DocumentIndexer()
+        info = doc_index.qdrant.info()
         self.assertEqual(info.status, CollectionStatus.GREEN)
 
-    def test_config(self):
-        qdrant = QdrantIndexer(384)
-        hits = qdrant.search()
-        print(hits[0])
-
-    def test_one_doc(self, abspath: Path):
-        doc_index = DocumentIndexer()
-        doc_index.process_file(abspath, force=True)
-
     def test_main(self):
-        main()
+        tot_nb_files = main(only_initial_scan=True)
+        self.assertGreaterEqual(tot_nb_files, 0)
 
     def test_embeding(self):
         model = SentenceTransformer(
@@ -75,14 +66,15 @@ class TestIngestWatch(unittest.TestCase):
         self.assertGreater(F.cosine_similarity(fra_emb, fra2_emb), 0, 6)
 
 
-if __name__ == "__main__":
-    a = TestIngestWatch()
+def process_one_doc(abspath: Path):
+    doc_index = DocumentIndexer()
+    doc_index.process_file(abspath, force=True)
 
-    a.test_qrant_connection()
-    # a.test_config()
-    # Test with '/docs/Technique/Doc 3D/AST.pdf'
-    # a.test_one_doc(
-    #     Path("/home/yann/johncloud_data/sftpgo/data/ydethe/Documents/Camille/BD Camille.pdf")
-    # )
+
+if __name__ == "__main__":
+    # a = TestIngestWatch()
+
+    # a.test_qrant_connection()
+    process_one_doc(Path("tests/inputs/docs/Marina Robledo NOTXT.pdf"))
     # a.test_main()
     # a.test_embeding()

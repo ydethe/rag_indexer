@@ -3,7 +3,7 @@ from typing import Iterable, Tuple
 
 import pytesseract
 from pdf2image import convert_from_path
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 
 from .. import logger
 from .ADocument import ADocument
@@ -82,7 +82,7 @@ class PdfDocument(ADocument):
                 logger.error(f"While extracting text: {e}")
                 txt = ""
 
-            if len(txt) < 10:
+            if len(txt) < 100:
                 if not self.using_ocr:
                     self.using_ocr = True
                     logger.info(f"Using OCR for '{self.get_abs_path()}' in '{self.ocr_dir}")

@@ -17,7 +17,7 @@ jobs:
           QDRANT__SERVICE__API_KEY: ${{ secrets.QDRANT__SERVICE__API_KEY }}
           QDRANT__SERVICE__READ_ONLY_API_KEY: ${{ secrets.QDRANT__SERVICE__READ_ONLY_API_KEY }}
         ports:
-          - 5432:5432
+          - 6333:6333
 
     steps:
       - name: Check out the repo

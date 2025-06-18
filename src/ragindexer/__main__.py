@@ -9,7 +9,7 @@ from . import logger
 from .DocumentIndexer import DocumentIndexer
 
 
-def main():
+def main(only_initial_scan: bool = False):
     torch.set_num_threads(config.TORCH_NUM_THREADS)
 
     # === Ensure NLTK punkt is available ===
@@ -28,10 +28,13 @@ def main():
     indexer = DocumentIndexer()
 
     # Initial full scan
-    indexer.initial_scan()
+    tot_nb_files = indexer.initial_scan()
 
-    # Start the filesystem watcher loop
-    indexer.start_watcher()
+    if not only_initial_scan:
+        # Start the filesystem watcher loop
+        indexer.start_watcher()
+
+    return tot_nb_files
 
 
 if __name__ == "__main__":
