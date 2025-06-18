@@ -1,8 +1,8 @@
 #! /bin/bash
 
-# mkdir -p htmldoc/ragindexer
-# rm -rf .root
-# .venv/bin/pytest
+mkdir -p htmldoc/ragindexer
+rm -rf .root
+.venv/bin/pytest
 .venv/bin/pdoc --html --force --config latex_math=True -o htmldoc ragindexer
 .venv/bin/coverage html -d htmldoc/coverage --rcfile tests/coverage.conf
 .venv/bin/coverage xml -o htmldoc/coverage/coverage.xml --rcfile tests/coverage.conf
