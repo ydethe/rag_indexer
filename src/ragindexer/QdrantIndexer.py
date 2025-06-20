@@ -33,14 +33,18 @@ class QdrantIndexer:
         self.vector_size = vector_size
         self.__create_collection_if_missing()
 
-    def create_snapshot(self, output_dir: Path | None = None) -> Path:
+    def create_snapshot(self, output: Path | None = None) -> Path:
         snap_desc = self.__client.create_snapshot(collection_name=config.COLLECTION_NAME)
 
         url = config.QDRANT_URL
         headers = {"api-key": config.QDRANT_API_KEY}
         response = requests.get(url, headers=headers)
 
-        snap_path = output_dir / snap_desc
+        if output.suffix == ".snapshot":
+            snap_path = output
+        else:
+            snap_path = output / snap_desc.name
+
         if response.status_code == 200:
             with open(snap_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=1024):

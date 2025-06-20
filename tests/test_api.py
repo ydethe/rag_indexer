@@ -25,7 +25,7 @@ class TestIngestWatch(unittest.TestCase):
         tot_nb_files = main(only_initial_scan=True)
         self.assertGreaterEqual(tot_nb_files, 0)
 
-        doc_index.qdrant.create_snapshot(Path("tests"))
+        doc_index.qdrant.create_snapshot(Path("tests/qdrant.snapshot"))
 
     def test_embeding(self):
         model = SentenceTransformer(

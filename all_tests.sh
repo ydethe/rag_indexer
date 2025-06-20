@@ -8,4 +8,4 @@ rm -rf .root tests/*.snapshot
 .venv/bin/coverage xml -o htmldoc/coverage/coverage.xml --rcfile tests/coverage.conf
 .venv/bin/docstr-coverage src/ragindexer -miP -sp -is -idel --skip-file-doc --badge=htmldoc/ragindexer/doc_badge.svg
 .venv/bin/genbadge coverage -l -i htmldoc/coverage/coverage.xml -o htmldoc/ragindexer/cov_badge.svg
-mv tests/*.snapshot htmldoc
+mv tests/qdrant.snapshot htmldoc
