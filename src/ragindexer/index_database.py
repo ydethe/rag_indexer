@@ -80,6 +80,18 @@ def delete_stored_file(relpath: Path):
     conn.close()
 
 
+def delete_all_files():
+    """
+    Delete all files
+
+    """
+    conn = sqlite3.connect(config.STATE_DB_PATH)
+    c = conn.cursor()
+    c.execute("DELETE FROM files")
+    conn.commit()
+    conn.close()
+
+
 def list_stored_files(absolute: bool = False) -> list[Path]:
     """
     List all paths stored in the database

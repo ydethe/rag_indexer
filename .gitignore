@@ -2,6 +2,7 @@
 migrations
 .gradio
 htmldoc
+*.snapshot
 *.db
 *.bak
 venv

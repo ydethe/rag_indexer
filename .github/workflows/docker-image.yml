@@ -59,7 +59,7 @@ jobs:
           QDRANT__SERVICE__API_KEY: ${{ secrets.QDRANT__SERVICE__API_KEY }}
           QDRANT__SERVICE__READ_ONLY_API_KEY: ${{ secrets.QDRANT__SERVICE__READ_ONLY_API_KEY }}
           QDRANT_API_KEY: ${{ secrets.QDRANT__SERVICE__API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAPI_API_KEY }}
+          OPEN_MODEL_API_KEY: ${{ secrets.OPENAPI_API_KEY }}
           DOCS_PATH: tests/inputs/docs
           EMAILS_PATH: tests/inputs/emails
           STATE_DB_PATH: .data/index_state.db
@@ -73,7 +73,6 @@ jobs:
           OCR_LANG: "fra+eng"
           OPEN_MODEL_PREF: 'gpt-4o'
           TORCH_NUM_THREADS: 3
-
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

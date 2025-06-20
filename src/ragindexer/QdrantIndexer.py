@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 import time
 from typing import Optional, List, Sequence, Union
 import uuid
@@ -11,6 +12,7 @@ from qdrant_client.models import (
     PointStruct,
     PointIdsList,
 )
+import requests
 
 from . import logger
 from .config import config
@@ -31,9 +33,29 @@ class QdrantIndexer:
         self.vector_size = vector_size
         self.__create_collection_if_missing()
 
+    def create_snapshot(self, output_dir: Path | None = None) -> Path:
+        snap_desc = self.__client.create_snapshot(collection_name=config.COLLECTION_NAME)
+
+        url = config.QDRANT_URL
+        headers = {"api-key": config.QDRANT_API_KEY}
+        response = requests.get(url, headers=headers)
+
+        snap_path = output_dir / snap_desc
+        if response.status_code == 200:
+            with open(snap_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+
+        return snap_path
+
     def info(self) -> types.CollectionInfo:
         info = self.__client.get_collection(collection_name=config.COLLECTION_NAME)
         return info
+
+    def empty_collection(self):
+        self.__client.delete_collection(collection_name=config.COLLECTION_NAME)
+        self.__create_collection_if_missing()
 
     def search(
         self,

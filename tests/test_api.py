@@ -17,8 +17,15 @@ class TestIngestWatch(unittest.TestCase):
         self.assertEqual(info.status, CollectionStatus.GREEN)
 
     def test_main(self):
+        doc_index = DocumentIndexer()
+        doc_index.qdrant.empty_collection()
+
+        config.STATE_DB_PATH.unlink(missing_ok=True)
+
         tot_nb_files = main(only_initial_scan=True)
         self.assertGreaterEqual(tot_nb_files, 0)
+
+        doc_index.qdrant.create_snapshot(Path("tests"))
 
     def test_embeding(self):
         model = SentenceTransformer(
@@ -72,9 +79,9 @@ def process_one_doc(abspath: Path):
 
 
 if __name__ == "__main__":
-    # a = TestIngestWatch()
+    a = TestIngestWatch()
 
     # a.test_qrant_connection()
-    process_one_doc(Path("tests/inputs/docs/Marina Robledo NOTXT.pdf"))
-    # a.test_main()
+    # process_one_doc(Path("tests/inputs/docs/Marina Robledo NOTXT.pdf"))
+    a.test_main()
     # a.test_embeding()

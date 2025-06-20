@@ -12,7 +12,6 @@ class Config(BaseSettings):
     QDRANT_URL: str
     QDRANT_QUERY_LIMIT: int
     QDRANT_API_KEY: str
-    OPENAI_API_KEY: str
     DOCS_PATH: Path
     EMAILS_PATH: Path
     STATE_DB_PATH: Path
@@ -21,7 +20,6 @@ class Config(BaseSettings):
     EMBEDDING_MODEL: str
     EMBEDDING_MODEL_TRUST_REMOTE_CODE: bool
     MIN_EXPECTED_CHAR: int
-    OPEN_MODEL_PREF: str
     CHUNK_SIZE: int
     CHUNK_OVERLAP: int
     OCR_LANG: str
