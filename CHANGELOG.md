@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Added publication of qdrant snapshot on github pages ([e54301c](https://github.com/ydethe/ragindexer/commit/e54301c5cc07c23549b9544a3c550069f2a583e3) by Yann de The).
+- Added publication of qdrant snapshot on github pages ([8c637a3](https://github.com/ydethe/ragindexer/commit/8c637a3d757a238a35840a2a49619879a21e856c) by Yann de The).
 - Added link to doc pages ([080304e](https://github.com/ydethe/ragindexer/commit/080304ec4a90cbc50efd03be87d3ec716991a381) by Yann de The).
 - Added github pages publication ([3fb26fb](https://github.com/ydethe/ragindexer/commit/3fb26fb240d07ec595caa6a4a9f297ea93514dc8) by Yann de The).
 - Added MIN_EXPECTED_CHAR env var ([c5011fc](https://github.com/ydethe/ragindexer/commit/c5011fc759b4aaddadb40d7e2135e5e2a11f438c) by Yann de The).
