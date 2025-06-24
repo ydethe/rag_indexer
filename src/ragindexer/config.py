@@ -19,6 +19,10 @@ class Config(BaseSettings):
     DAV_ROOT: str
     EMBEDDING_MODEL: str
     EMBEDDING_MODEL_TRUST_REMOTE_CODE: bool
+    OPEN_MODEL_ENDPOINT: str
+    OPEN_MODEL_API_KEY: str
+    OPEN_MODEL_PREF: str
+    OPEN_MODEL_TEMPERATURE: float
     MIN_EXPECTED_CHAR: int
     CHUNK_SIZE: int
     CHUNK_OVERLAP: int
