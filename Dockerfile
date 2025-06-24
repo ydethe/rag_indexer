@@ -41,7 +41,8 @@ RUN apt update && apt install -y \
     tesseract-ocr-fra \
     poppler-utils \
     libgl1 \
-    fonts-freefont-ttf
+    fonts-freefont-ttf \
+    libmagic-dev
 
 WORKDIR /app
 

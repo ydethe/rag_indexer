@@ -17,6 +17,7 @@ dependencies = [
     "python-json-logger>=3.3.0",
     "qdrant-client>=1.14.2",
     "solus>=1.2.2",
+    "unstructured[pdf]>=0.17.2",
     "watchdog>=6.0.0",
 ]
 

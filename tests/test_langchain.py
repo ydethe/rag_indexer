@@ -20,16 +20,20 @@ def test_langchain_model():
 
 def test_langchain_pdf_loader():
     loader = PyMuPDF4LLMLoader(
-        file_path=Path("tests/inputs/docs/Marina Robledo NOTXT.pdf"),
+        file_path=Path("tests/inputs/docs/Marina Robledo.pdf"),
         mode="page",
         extract_images=True,
         images_parser=TesseractBlobParser(),
         table_strategy="lines",
     )
+
     docs = loader.load()
 
-    for d in docs[:3]:
-        print(f"- {d.page_content=}")
+    output_folder = Path("tests/output")
+    output_folder.mkdir(exist_ok=True, parents=True)
+    with open(output_folder / "Marina Robledo.md", "w") as f:
+        for d in docs[:3]:
+            f.write(d.page_content)
 
 
 if __name__ == "__main__":
