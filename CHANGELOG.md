@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added QdrantIndexer.get_vector_by_id ([37b2a36](https://github.com/ydethe/ragindexer/commit/37b2a36ebf28b82c49bbe0843b727e2a2b2cc1e6) by Yann de The).
 - Added publication of qdrant snapshot on github pages ([8c637a3](https://github.com/ydethe/ragindexer/commit/8c637a3d757a238a35840a2a49619879a21e856c) by Yann de The).
 - Added link to doc pages ([080304e](https://github.com/ydethe/ragindexer/commit/080304ec4a90cbc50efd03be87d3ec716991a381) by Yann de The).
 - Added github pages publication ([3fb26fb](https://github.com/ydethe/ragindexer/commit/3fb26fb240d07ec595caa6a4a9f297ea93514dc8) by Yann de The).

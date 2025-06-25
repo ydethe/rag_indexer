@@ -2,6 +2,7 @@
 migrations
 .gradio
 htmldoc
+tests/output/
 *.snapshot
 *.db
 *.bak
