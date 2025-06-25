@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed Action ([85cd5bb](https://github.com/ydethe/ragindexer/commit/85cd5bbb0c96c318d57cbac3fd021dec516d339b) by Yann de The).
 - Fixed Exception raised when no text read ([88c078f](https://github.com/ydethe/ragindexer/commit/88c078f4f708ef90ec31a8169858d13bef75bd77) by Yann de The).
 - Fixed empty chunks ([a72e49a](https://github.com/ydethe/ragindexer/commit/a72e49a4ea0873e01336aaf7bc2f98999fd3475c) by Yann de The).
 - Fixed pid computation ([e3840c1](https://github.com/ydethe/ragindexer/commit/e3840c16f5f9a94623924f6bcbb730f3850e9faf) by Yann de The).
@@ -40,7 +41,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed bug where a whole pdf file is skipped if one page has no text ([301e5eb](https://github.com/ydethe/ragindexer/commit/301e5eb7db159b4ca5a69fce8c26c5fc21224ed9) by Yann de The).
 - Fixed image name ([eadcf30](https://github.com/ydethe/ragindexer/commit/eadcf3044c877e6b9cd01b20ab3a3bb7204e509f) by Yann de The).
 - Fixed pdf error ([cff80bb](https://github.com/ydethe/ragindexer/commit/cff80bbb69e929a6e53d1617ef30b091e88336d8) by Yann de The).
-- Fixed action ([694bde7](https://github.com/ydethe/ragindexer/commit/694bde7e470a78f8270edde54fa4752fed7d0ed0) by Yann de The).
 - Fixed docker compose stack ([814adf6](https://github.com/ydethe/ragindexer/commit/814adf6ccf826eabe9e3004d762c2115f89d2e4c) by Yann de The).
 - Fixing pipeline ([00107b2](https://github.com/ydethe/ragindexer/commit/00107b29eaad9b53df18e2037222e1a938494966) by Yann de The).
 

@@ -11,6 +11,8 @@ from qdrant_client.models import (
     Distance,
     PointStruct,
     PointIdsList,
+    ScoredPoint,
+    Record,
 )
 import requests
 
@@ -32,6 +34,17 @@ class QdrantIndexer:
         self.__client = QdrantClient(url=config.QDRANT_URL, api_key=config.QDRANT_API_KEY)
         self.vector_size = vector_size
         self.__create_collection_if_missing()
+
+    def get_vector_by_id(self, vector_id: str) -> None | Record:
+        hits = self.__client.retrieve(
+            collection_name=config.COLLECTION_NAME, ids=[vector_id], with_vectors=True
+        )
+        if len(hits) == 0:
+            return None
+        elif len(hits) == 1:
+            return hits[0]
+        else:
+            raise ValueError(f"Got {len(hits)} results for id={vector_id}")
 
     def create_snapshot(self, output: Path | None = None) -> Path:
         snap_desc = self.__client.create_snapshot(collection_name=config.COLLECTION_NAME)
@@ -74,7 +87,7 @@ class QdrantIndexer:
         ] = None,
         limit: Optional[int] = 10,
         query_filter: Optional[types.Filter] = None,
-    ):
+    ) -> List[ScoredPoint]:
         """Search a vector in the database
         See https://qdrant.tech/documentation/concepts/search/
         and https://qdrant.tech/documentation/concepts/filtering/ for more details

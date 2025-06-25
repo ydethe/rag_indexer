@@ -27,6 +27,11 @@ class TestIngestWatch(unittest.TestCase):
 
         doc_index.qdrant.create_snapshot(Path("tests/qdrant.snapshot"))
 
+    def test_encoding(self):
+        doc_index = DocumentIndexer()
+        vec = doc_index.qdrant.get_vector_by_id("0000313b-d661-6332-dff7-e165b71046d1")
+        print(vec)
+
     def test_embeding(self):
         model = SentenceTransformer(
             config.EMBEDDING_MODEL,
@@ -83,5 +88,6 @@ if __name__ == "__main__":
 
     # a.test_qrant_connection()
     # process_one_doc(Path("tests/inputs/docs/Marina Robledo NOTXT.pdf"))
-    a.test_main()
+    # a.test_main()
+    a.test_encoding()
     # a.test_embeding()
